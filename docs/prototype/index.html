@@ -1,0 +1,1627 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body style="margin:0">
+<title>开蒙纸坊原型</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Ma+Shan+Zheng&family=LXGW+WenKai+TC&display=swap">
+<style>
+:root{
+  --bg:#F2EFE9;--surface:#FBF9F5;--surface-2:#E9E4DA;--line:#D9D3C7;--line-2:#C6BFB1;
+  --ink:#1F1D1A;--ink-2:#5C574F;--ink-3:#8B857B;
+  --indigo:#2F4E7F;--on-indigo:#FFFFFF;--indigo-soft:#DCE4F1;
+  --cinnabar:#B23A2E;--on-cinnabar:#FFFFFF;--cinnabar-soft:#F3DCD8;
+  --ok:#3B7A4E;--ok-soft:#DCEBDF;--warn:#9A6414;--warn-soft:#F5E7C8;
+  --paper:#FFFFFF;--paper-shadow:0 2px 6px rgba(31,29,26,.18),0 12px 32px rgba(31,29,26,.12);
+  --focus:#2F4E7F;--r:6px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1A1917;--surface:#232120;--surface-2:#2D2A27;--line:#3A3632;--line-2:#4A453F;
+    --ink:#ECE6DA;--ink-2:#B8B0A2;--ink-3:#877F73;
+    --indigo:#93B3E6;--on-indigo:#101B2E;--indigo-soft:#27364F;
+    --cinnabar:#E27E71;--on-cinnabar:#2A0F0C;--cinnabar-soft:#4A2622;
+    --ok:#7FBF92;--ok-soft:#24382B;--warn:#E0AE55;--warn-soft:#3F3117;
+    --paper:#FFFFFF;--paper-shadow:0 2px 6px rgba(0,0,0,.5),0 12px 32px rgba(0,0,0,.4);
+    --focus:#93B3E6;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1A1917;--surface:#232120;--surface-2:#2D2A27;--line:#3A3632;--line-2:#4A453F;
+  --ink:#ECE6DA;--ink-2:#B8B0A2;--ink-3:#877F73;
+  --indigo:#93B3E6;--on-indigo:#101B2E;--indigo-soft:#27364F;
+  --cinnabar:#E27E71;--on-cinnabar:#2A0F0C;--cinnabar-soft:#4A2622;
+  --ok:#7FBF92;--ok-soft:#24382B;--warn:#E0AE55;--warn-soft:#3F3117;
+  --paper:#FFFFFF;--paper-shadow:0 2px 6px rgba(0,0,0,.5),0 12px 32px rgba(0,0,0,.4);
+  --focus:#93B3E6;color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans SC",system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+h1,h2,h3,h4{margin:0;font-family:"Noto Serif SC",Georgia,serif;text-wrap:balance;line-height:1.3}
+h1{font-size:22px;font-weight:600}
+h2{font-size:18px;font-weight:600}
+h3{font-size:15px;font-weight:600;color:var(--ink-2);margin-top:8px}
+h4{font-size:13px;font-weight:600;color:var(--ink-2);letter-spacing:.04em}
+p{margin:0}
+.muted{color:var(--ink-3);font-size:12.5px}
+.eyebrow{font-size:12px;letter-spacing:.08em;color:var(--ink-3);text-transform:uppercase}
+.num{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* shell */
+.app{height:100%;display:flex;flex-direction:column}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;gap:8px;height:52px;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--line);flex-wrap:nowrap}
+.brand{display:flex;align-items:center;gap:8px;font-family:"Ma Shan Zheng","Noto Serif SC","KaiTi","STKaiti",serif;font-size:22px;color:var(--indigo);border:0;background:none;padding:4px 6px 4px 0;white-space:nowrap}
+.brand .seal{width:18px;height:18px;border-radius:2px;background:var(--cinnabar);color:var(--on-cinnabar);font-size:11px;display:inline-flex;align-items:center;justify-content:center;font-family:"Noto Serif SC",serif;font-weight:700}
+.nav{display:flex;gap:2px;margin-left:8px;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav button{border:0;background:none;padding:8px 10px;border-radius:var(--r);color:var(--ink-2);white-space:nowrap;position:relative}
+.nav button[aria-current="page"]{color:var(--indigo);font-weight:500}
+.nav button[aria-current="page"]::after{content:"";position:absolute;left:10px;right:10px;bottom:2px;height:2px;background:var(--indigo);border-radius:1px}
+.topbar .spacer{flex:1}
+.tag{font-size:11px;padding:2px 7px;border-radius:999px;background:var(--surface-2);color:var(--ink-2);white-space:nowrap}
+.tag.red{background:var(--cinnabar-soft);color:var(--cinnabar)}
+.tag.blue{background:var(--indigo-soft);color:var(--indigo)}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.main{flex:1;display:flex;min-height:0}
+.stage{flex:1;overflow:auto;padding-block:20px;padding-inline:16px}
+.stage>.inner{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.screen[hidden]{display:none!important}
+.screen{display:flex;flex-direction:column;gap:18px}
+.screen-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.crumbs{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--ink-3)}
+.crumbs button{border:0;background:none;padding:0;color:var(--indigo);text-decoration:underline;text-underline-offset:2px}
+
+/* drawer */
+.drawer{width:360px;flex:none;background:var(--surface);border-left:1px solid var(--line);overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.drawer[hidden]{display:none!important}
+.drawer h2{font-size:15px}
+.drawer ol,.drawer ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.drawer li{font-size:13px;color:var(--ink-2)}
+.drawer .notes li{cursor:pointer}
+.drawer .notes li b{display:inline-flex;width:20px;height:20px;border-radius:50%;background:var(--cinnabar);color:var(--on-cinnabar);font-size:11px;align-items:center;justify-content:center;margin-right:6px;font-weight:700}
+.drawer section{display:flex;flex-direction:column;gap:6px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.drawer section:last-child{border:0}
+.drawer .prd{font-size:12.5px;color:var(--ink-3)}
+@media (max-width:720px){.topbar .tag{display:none}.nav button{padding:8px 7px;font-size:13px}.topbar{gap:4px}}
+@media (max-width:980px){.drawer{position:fixed;right:0;top:calc(52px + env(safe-area-inset-top,0px));bottom:0;width:min(380px,100%);z-index:30;box-shadow:-8px 0 24px rgba(0,0,0,.15)}}
+
+/* annotations */
+.hsw{position:relative}
+.hs{display:none;position:absolute;top:-9px;left:-9px;z-index:5;width:22px;height:22px;border-radius:50%;background:var(--cinnabar);color:var(--on-cinnabar);font-size:12px;font-weight:700;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.3);pointer-events:none}
+.annot .hs{display:flex}
+.annot .hsw{outline:1.5px dashed var(--cinnabar);outline-offset:3px}
+.pulse{animation:pulse .9s ease-out 2}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(178,58,46,.5)}100%{box-shadow:0 0 0 14px rgba(178,58,46,0)}}
+
+/* controls */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:6px 14px;border-radius:var(--r);border:1px solid var(--line-2);background:var(--surface);color:var(--ink);white-space:nowrap}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--indigo);color:var(--on-indigo);border-color:var(--indigo)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.red{background:var(--cinnabar);color:var(--on-cinnabar);border-color:var(--cinnabar)}
+.btn.small{min-height:30px;padding:3px 10px;font-size:13px}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--indigo)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row.between{justify-content:space-between}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;padding:6px 12px;min-height:34px;color:var(--ink-2)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--indigo-soft);color:var(--indigo);font-weight:500}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line-2);background:var(--surface);border-radius:999px;padding:4px 12px;min-height:30px;font-size:13px;color:var(--ink-2)}
+.chip[aria-pressed="true"]{background:var(--indigo);color:var(--on-indigo);border-color:var(--indigo)}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:12.5px;color:var(--ink-2)}
+.field .inline{display:flex;gap:8px;align-items:center}
+input[type=text],input[type=search],select,textarea{width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface)}
+textarea{min-height:120px;resize:vertical;font-family:"Noto Serif SC",serif;font-size:15px;line-height:1.7}
+input[type=range]{width:100%;accent-color:var(--indigo)}
+input[type=number]{width:72px;min-height:32px;padding:4px 8px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface)}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:32px}
+.switch input{accent-color:var(--indigo);width:18px;height:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px}
+.card.flat{background:transparent}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:var(--r);font-size:13.5px;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:calc(100% - 32px)}
+.toast[hidden]{display:none!important}
+
+/* home */
+.hero-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+.today .poem-title{font-family:"Ma Shan Zheng","Noto Serif SC","KaiTi",serif;font-size:40px;font-weight:400;letter-spacing:.1em;color:var(--ink)}
+.today .poem-meta{color:var(--ink-3)}
+.poem-lines{display:flex;flex-direction:column;gap:6px;font-family:"Noto Serif SC",serif;font-size:17px;letter-spacing:.12em}
+.poem-lines .py{display:block;font-family:"Noto Sans SC",sans-serif;font-size:11px;letter-spacing:.06em;color:var(--ink-3)}
+.mini-paper{align-items:center;justify-content:center;background:var(--surface-2)}
+.mini-paper svg{width:min(100%,200px);height:auto;box-shadow:var(--paper-shadow);background:var(--paper)}
+.entry-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.entry{text-align:left;display:flex;flex-direction:column;gap:6px;padding:14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);min-height:96px}
+.entry:hover{border-color:var(--indigo)}
+.entry b{font-family:"Noto Serif SC",serif;font-size:15px}
+.entry span{font-size:12.5px;color:var(--ink-3)}
+.tpl-strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+.tpl-strip .tcard{flex:none;width:150px}
+@media (max-width:820px){.hero-grid,.entry-grid{grid-template-columns:1fr}}
+
+/* library */
+.lib{display:grid;grid-template-columns:200px 1fr;gap:16px}
+.lib-side{display:flex;flex-direction:column;gap:2px}
+.lib-side button{text-align:left;border:0;background:none;padding:8px 10px;border-radius:var(--r);color:var(--ink-2);display:flex;justify-content:space-between}
+.lib-side button[aria-current="true"]{background:var(--indigo-soft);color:var(--indigo);font-weight:500}
+.lib-side .cnt{color:var(--ink-3);font-size:12px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.toolbar input[type=search]{flex:1;min-width:200px}
+.toolbar select{width:auto}
+.work-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.wcard{display:flex;flex-direction:column;gap:8px;text-align:left;padding:14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);min-height:130px}
+.wcard:hover{border-color:var(--indigo)}
+.wcard .t{font-family:"Noto Serif SC",serif;font-size:17px;font-weight:600}
+.wcard .a{color:var(--ink-3);font-size:12.5px}
+.wcard .first{font-family:"Noto Serif SC",serif;color:var(--ink-2);letter-spacing:.06em}
+.wcard .tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:auto}
+@media (max-width:820px){.lib{grid-template-columns:1fr}.lib-side{flex-direction:row;flex-wrap:wrap}}
+
+/* work detail */
+.work-text{display:flex;flex-direction:column;gap:10px;font-family:"Noto Serif SC",serif;font-size:22px;letter-spacing:.1em;line-height:1.4}
+.work-text .line{display:flex;flex-wrap:wrap;gap:2px;align-items:flex-end;padding:6px 8px;border-radius:var(--r);border:1px solid transparent}
+.work-text.sel-lines .line{cursor:pointer}
+.work-text.sel-lines .line:hover{border-color:var(--line-2)}
+.work-text .line.on{background:var(--indigo-soft);border-color:var(--indigo)}
+.work-text .ch{display:inline-flex;flex-direction:column;align-items:center;min-width:1.2em;border-radius:4px;padding:0 2px}
+.work-text .ch .py{font-family:"Noto Sans SC",sans-serif;font-size:11px;letter-spacing:0;color:var(--ink-3);height:14px}
+.work-text .ch .py.hide{visibility:hidden}
+.work-text.sel-chars .ch{cursor:pointer}
+.work-text.sel-chars .ch:hover{background:var(--surface-2)}
+.work-text .ch.on{background:var(--cinnabar-soft);color:var(--cinnabar)}
+.work-text .ch.punct{color:var(--ink-3)}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line)}
+.tabs button{border:0;background:none;padding:8px 12px;color:var(--ink-2);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--indigo);border-bottom-color:var(--indigo);font-weight:500}
+.tabpanel{padding:12px 4px;color:var(--ink-2);font-size:14px;line-height:1.8;max-width:68ch}
+.selbar{position:sticky;bottom:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 -4px 16px rgba(0,0,0,.06)}
+.work-grid{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start}
+@media (max-width:900px){.work-grid{grid-template-columns:1fr}}
+
+/* custom */
+.custom-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.pytable{width:100%;border-collapse:collapse;font-size:13.5px}
+.pytable th,.pytable td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.pytable th{font-weight:500;color:var(--ink-3);font-size:12px}
+.pytable td.ch{font-family:"Noto Serif SC",serif;font-size:20px}
+.pytable select{width:auto;min-height:30px;padding:2px 6px}
+.pytable tr.multi td{background:var(--warn-soft)}
+@media (max-width:900px){.custom-grid{grid-template-columns:1fr}}
+
+/* templates */
+.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.tcard{display:flex;flex-direction:column;gap:8px;text-align:left;padding:10px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.tcard:hover{border-color:var(--indigo)}
+.tcard .thumb{background:var(--surface-2);padding:10px;display:flex;justify-content:center;border-radius:4px}
+.tcard .thumb svg{width:100%;max-width:120px;height:auto;box-shadow:var(--paper-shadow);background:var(--paper)}
+.tcard .n{font-family:"Noto Serif SC",serif;font-weight:600;font-size:14.5px}
+.tcard .d{font-size:12px;color:var(--ink-3)}
+.tcard .tags{display:flex;gap:4px;flex-wrap:wrap}
+
+/* composer */
+.composer{display:grid;grid-template-columns:250px minmax(0,1fr) 300px;gap:14px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:12px}
+.panel .sec{display:flex;flex-direction:column;gap:8px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.panel .sec:last-child{border:0;padding-bottom:0}
+.preview-col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.preview-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.paper-wrap{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:20px;overflow:auto;display:flex;justify-content:center;align-items:flex-start;min-height:400px}
+.paper-wrap svg{display:block;background:var(--paper);box-shadow:var(--paper-shadow);height:auto;max-width:100%}
+.paper-wrap.actual svg{max-width:none}
+.content-summary{font-family:"Noto Serif SC",serif;font-size:14px;line-height:1.6;color:var(--ink-2);max-height:140px;overflow:auto;padding:8px;background:var(--bg);border-radius:4px;letter-spacing:.05em}
+@media (max-width:1080px){.composer{grid-template-columns:1fr}.panel{order:2}.preview-col{order:1}}
+
+/* print */
+.print{display:grid;grid-template-columns:150px minmax(0,1fr) 300px;gap:14px;align-items:start}
+.thumbs{display:flex;flex-direction:column;gap:8px;max-height:70vh;overflow:auto;padding:4px}
+.thumbs button{border:2px solid transparent;background:none;padding:2px;border-radius:4px;display:flex;flex-direction:column;gap:2px;align-items:center}
+.thumbs button[aria-current="true"]{border-color:var(--indigo)}
+.thumbs svg{width:100%;height:auto;background:var(--paper);box-shadow:var(--paper-shadow)}
+.thumbs .lbl{font-size:11px;color:var(--ink-3)}
+.tips{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--ink-2)}
+.tips li{margin-left:16px}
+@media (max-width:1080px){.print{grid-template-columns:1fr}.thumbs{flex-direction:row;max-height:none}.thumbs button{width:90px;flex:none}}
+
+/* collections */
+.col-grid{display:grid;grid-template-columns:280px minmax(0,1fr);gap:16px;align-items:start}
+.col-list{display:flex;flex-direction:column;gap:6px}
+.col-list button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.col-list button[aria-current="true"]{border-color:var(--indigo);background:var(--indigo-soft)}
+.col-list b{font-family:"Noto Serif SC",serif}
+.items{display:flex;flex-direction:column;gap:6px}
+.item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.item .t{font-family:"Noto Serif SC",serif;flex:1}
+.item .btn{min-height:28px;padding:2px 8px;font-size:12px}
+.booklet-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.booklet-summary div{background:var(--bg);border-radius:4px;padding:8px 10px;display:flex;flex-direction:column}
+.booklet-summary b{font-size:20px;font-family:"Noto Serif SC",serif}
+.booklet-summary span{font-size:12px;color:var(--ink-3)}
+@media (max-width:900px){.col-grid{grid-template-columns:1fr}}
+
+/* me */
+.me-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.plan{width:100%;border-collapse:collapse;font-size:13px}
+.plan th,.plan td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left}
+.plan th{font-weight:500;color:var(--ink-3)}
+.plan td.y{color:var(--ok)}
+.plan td.n{color:var(--ink-3)}
+.list{display:flex;flex-direction:column;gap:6px}
+.list .item .meta{font-size:12px;color:var(--ink-3)}
+@media (max-width:900px){.me-grid{grid-template-columns:1fr}}
+
+/* flow */
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:stretch}
+.fbox{display:flex;flex-direction:column;gap:4px;text-align:left;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);min-height:110px}
+.fbox:hover{border-color:var(--indigo)}
+.fbox b{font-family:"Noto Serif SC",serif;font-size:15px}
+.fbox span{font-size:12px;color:var(--ink-3)}
+.fbox .step{font-size:11px;color:var(--indigo);letter-spacing:.08em}
+.fbox.core{border-color:var(--indigo);background:var(--indigo-soft)}
+.flow-arrow{display:flex;align-items:center;justify-content:center;color:var(--ink-3);font-size:20px}
+.spec{width:100%;border-collapse:collapse;font-size:13px}
+.spec th,.spec td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+.spec th{font-weight:500;color:var(--ink-3)}
+.tablewrap{overflow-x:auto}
+@media (max-width:900px){.flow{grid-template-columns:1fr 1fr}}
+/* 纸坊 */
+.shop{display:grid;grid-template-columns:170px minmax(0,1fr);gap:18px;align-items:start}
+.shop-rail{display:flex;flex-direction:column;gap:12px;position:sticky;top:8px}
+.rail-group{display:flex;flex-direction:column;gap:4px}
+.rail{display:flex;flex-direction:column;gap:1px}
+.rail button{text-align:left;border:0;background:none;padding:5px 10px;border-radius:var(--r);color:var(--ink-2);min-height:30px}
+.rail button[aria-pressed="true"]{background:var(--indigo-soft);color:var(--indigo);font-weight:500}
+.shop-main{display:flex;flex-direction:column;gap:12px;min-width:0}
+.tpl-grid.big{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.tcard.big .thumb svg{max-width:170px}
+button.thumb{border:0;cursor:pointer;width:100%}
+button.thumb:hover svg{outline:2px solid var(--indigo)}
+.tcard .specs{display:flex;gap:4px;flex-wrap:wrap}
+.tcard .actions{display:flex;gap:6px;margin-top:auto;padding-top:4px}
+@media (max-width:820px){.shop{grid-template-columns:1fr}.shop-rail{position:static;flex-direction:row;flex-wrap:wrap;gap:16px}.rail{flex-direction:row;flex-wrap:wrap}}
+/* 产品化外壳 */
+.topsearch{display:flex}
+.topsearch input{min-height:34px;width:210px;border-radius:999px;padding:4px 14px;border:1px solid var(--line-2);background:var(--bg)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--indigo-soft);color:var(--indigo);border:0;font-family:"Noto Serif SC",serif;font-weight:600;font-size:13px;flex:none}
+@media (max-width:900px){.topsearch{display:none}}
+.proto-pill{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;border:0;border-radius:999px;padding:8px 14px;background:var(--ink);color:var(--bg);font-size:12.5px;box-shadow:0 4px 14px rgba(0,0,0,.25);opacity:.8}
+.proto-pill:hover{opacity:1}
+.proto-pill[aria-pressed="true"]{background:var(--cinnabar);color:var(--on-cinnabar);opacity:1}
+.foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--ink-3);font-size:12px;padding-top:24px;margin-top:8px;border-top:1px solid var(--line)}
+.modal-backdrop{position:fixed;inset:0;background:rgba(20,18,15,.42);z-index:60;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--surface);border-radius:10px;padding:22px;width:min(520px,100%);max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.modal h2{font-size:17px}
+.modal .body{display:flex;flex-direction:column;gap:12px;font-size:14px;color:var(--ink-2)}
+.qr{width:168px;height:168px;margin:0 auto;border:1px solid var(--line-2);border-radius:8px;background:repeating-conic-gradient(var(--ink) 0 25%,var(--surface) 0 50%) 0 0/12px 12px;position:relative}
+.qr::after{content:"微信扫一扫";position:absolute;inset:auto 0 -26px 0;text-align:center;font-size:12px;color:var(--ink-3)}
+.cal-box{width:85.6mm;height:53.98mm;border:2px solid var(--cinnabar);border-radius:3mm;margin:6px auto;display:flex;align-items:center;justify-content:center;color:var(--cinnabar);font-size:13px;max-width:100%}
+.steps{display:flex;flex-direction:column;gap:8px}
+.steps div{display:flex;align-items:center;gap:10px}
+.steps i{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;color:var(--on-indigo);flex:none}
+.steps div.done i{background:var(--ok);border-color:var(--ok)}
+.steps div.doing i{border-color:var(--indigo);border-top-color:transparent;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pd{display:grid;grid-template-columns:90px 1fr;gap:10px 12px;align-items:center;font-size:14px}
+.pd select,.pd input[type=number]{width:100%}
+</style>
+<div class="app" id="app">
+  <header class="topbar">
+    <button class="brand" data-go="home" aria-label="回到首页"><span class="seal">蒙</span>开蒙纸坊</button>
+    <nav class="nav" aria-label="主导航">
+      <button data-go="home">首页</button>
+      <button data-go="library">资料库</button>
+      <button data-go="templates">纸坊</button>
+      <button data-go="collections">文选</button>
+      <button data-go="me">个人中心</button>
+    </nav>
+    <span class="spacer"></span>
+    <form class="topsearch" id="top-search" role="search"><input type="search" id="top-q" placeholder="搜诗词、经典、汉字" aria-label="搜索资料库"></form>
+    <button class="btn small" id="btn-login">登录</button>
+    <button class="avatar" data-go="me" aria-label="个人中心">客</button>
+  </header>
+
+  <div class="main">
+    <div class="stage"><div class="inner">
+
+<!-- ========== 首页 ========== -->
+<section class="screen" id="s-home" aria-label="首页">
+  <div class="hero-grid">
+    <div class="card today hsw"><b class="hs">1</b>
+      <div class="eyebrow" id="home-date">今日一页 · 九月二十五日 · 秋分后三日</div>
+      <h2 class="poem-title" id="home-title">静夜思</h2>
+      <div class="poem-meta" id="home-meta">唐 · 李白</div>
+      <div class="poem-lines" id="home-lines"></div>
+      <div class="row">
+        <button class="btn primary" data-go="composer" data-work="jingyesi" data-template="tian-trace">打印今天这张纸</button>
+        <button class="btn" data-go="work" data-work="jingyesi">看注释与译文</button>
+      </div>
+    </div>
+    <div class="card mini-paper hsw"><b class="hs">2</b>
+      <div id="home-preview"></div>
+      <div class="muted">田字格描红 · A4 · 一年级内容默认带拼音 · 一例二描</div>
+    </div>
+  </div>
+
+  <h3>从哪里开始</h3>
+  <div class="entry-grid hsw"><b class="hs">3</b>
+    <button class="entry" data-go="library"><b>从资料库选</b><span>蒙学经典、必背古诗、识字表，按年级和主题找</span></button>
+    <button class="entry" data-go="custom"><b>用自己的文字</b><span>粘贴任意文本，自动注音，核对多音字后出纸</span></button>
+    <button class="entry" data-go="library" data-cat="hanzi"><b>按教材单元取字</b><span>选年级与单元，识字表和写字表自动列出</span></button>
+  </div>
+
+  <h3>最近用过的纸</h3>
+  <div class="tpl-strip hsw" id="home-templates"><b class="hs">4</b></div>
+
+  <h3>我的文选</h3>
+  <div class="row hsw" id="home-collections"><b class="hs">5</b></div>
+  <footer class="foot"><span>开蒙纸坊 · 蒙学内容 × 可设计纸张 × 精确打印</span><span>帮助 · 关于 · 隐私 · 联系我们</span></footer>
+</section>
+
+<!-- ========== 资料库 ========== -->
+<section class="screen" id="s-library" aria-label="资料库" hidden>
+  <div class="screen-head"><h1>资料库</h1><span class="muted">内置内容均标注所据版本与校对记录</span></div>
+  <div class="lib">
+    <aside class="lib-side hsw" id="lib-cats"><b class="hs">1</b></aside>
+    <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      <div class="toolbar hsw"><b class="hs">2</b>
+        <input type="search" id="lib-q" placeholder="搜标题、作者、首句，支持拼音首字母，如 jys" aria-label="检索">
+        <select id="lib-grade" aria-label="年级筛选"><option value="">全部年级</option><option>学前</option><option>一年级</option><option>二年级</option><option>三年级</option><option>四年级</option></select>
+        <select id="lib-dyn" aria-label="朝代筛选"><option value="">全部朝代</option><option>唐</option><option>宋</option><option>南朝</option><option>清</option><option>先秦</option></select>
+      </div>
+      <div class="work-list hsw" id="lib-list"><b class="hs">3</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 作品详情 ========== -->
+<section class="screen" id="s-work" aria-label="作品详情" hidden>
+  <div class="crumbs"><button data-go="library">资料库</button><span>/</span><span id="work-crumb"></span></div>
+  <div class="screen-head">
+    <div><h1 id="work-title"></h1><div class="muted" id="work-meta"></div></div>
+    <div class="row hsw"><b class="hs">1</b>
+      <label class="switch" style="gap:6px"><input type="checkbox" id="work-py" checked> 拼音</label>
+      <div class="seg" role="group" aria-label="简繁">
+        <button aria-pressed="true">简</button><button disabled title="繁体即将支持">繁</button>
+      </div>
+      <div class="seg" role="group" aria-label="选取粒度" id="work-gran">
+        <button data-g="all" aria-pressed="true">整篇</button><button data-g="lines" aria-pressed="false">选句</button><button data-g="chars" aria-pressed="false">选字</button>
+      </div>
+    </div>
+  </div>
+  <div class="work-grid">
+    <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      <div class="card">
+        <div class="work-text hsw" id="work-text"><b class="hs">2</b></div>
+      </div>
+      <div class="card">
+        <div class="tabs hsw" role="tablist" id="work-tabs"><b class="hs">3</b>
+          <button role="tab" aria-selected="true" data-tab="notes">注释</button>
+          <button role="tab" aria-selected="false" data-tab="trans">译文</button>
+          <button role="tab" aria-selected="false" data-tab="edition">版本与校对</button>
+        </div>
+        <div class="tabpanel" id="work-tabpanel"></div>
+      </div>
+    </div>
+    <div class="card hsw"><b class="hs">4</b>
+      <h4>用这篇出纸</h4>
+      <div class="muted" id="work-selinfo"></div>
+      <button class="btn primary" id="work-go">选纸张 →</button>
+      <button class="btn" id="work-keep">用当前纸张设置出纸</button>
+      <button class="btn" id="work-quick">直接用田字格描红</button>
+      <button class="btn" id="work-collect">加入文选</button>
+      <div class="muted">字级数据：每个字带笔顺、部首、结构，点「选字」可只取几个字练。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 自定义内容 ========== -->
+<section class="screen" id="s-custom" aria-label="自己的文字" hidden>
+  <div class="screen-head"><h1>用自己的文字</h1><span class="muted">自动注音后请核对多音字，再出纸</span></div>
+  <div class="custom-grid">
+    <div class="card hsw"><b class="hs">1</b>
+      <label for="custom-text" class="muted">粘贴或输入文本，标点会自动断句</label>
+      <textarea id="custom-text">学而时习之，不亦说乎？有朋自远方来，不亦乐乎？
+春眠不觉晓，处处闻啼鸟。</textarea>
+      <div class="row between">
+        <span class="muted" id="custom-count"></span>
+        <div class="row">
+          <label class="switch" style="gap:6px"><input type="checkbox" id="custom-py"> 需要拼音</label>
+          <button class="btn" id="custom-run" hidden>自动注音</button>
+          <button class="btn primary" id="custom-go">直接出纸 →</button>
+        </div>
+      </div>
+      <div class="muted">不需要拼音就直接出纸。开启「需要拼音」后会按常用读音自动注音，多音字会标出请你核对，未收录的字可手动填写。</div>
+    </div>
+    <div class="card hsw" id="custom-check" hidden><b class="hs">2</b>
+      <div class="row between"><h4>逐字核对</h4><span class="tag warn" id="custom-multi"></span></div>
+      <div class="tablewrap"><table class="pytable" id="custom-table"></table></div>
+      <div class="row between">
+        <label class="switch" style="gap:6px"><input type="checkbox" id="custom-save"> 把改音结果记为我的规则</label>
+        <span class="muted">核对完成后点左侧「用它出纸」</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 纸坊 ========== -->
+<section class="screen" id="s-templates" aria-label="纸坊" hidden>
+  <div class="screen-head">
+    <div><h1>纸坊</h1><div class="muted" id="tpl-forwhat"></div></div>
+    <div class="row hsw"><b class="hs">1</b><button class="btn" data-go="library">换内容</button><button class="btn primary" id="tpl-blank">自己设计一张 →</button></div>
+  </div>
+  <div class="shop">
+    <aside class="shop-rail hsw"><b class="hs">2</b>
+      <div class="rail-group"><h4>用途</h4><div class="rail" id="tpl-use"></div></div>
+      <div class="rail-group"><h4>排版</h4><div class="rail" id="tpl-dir"></div></div>
+      <div class="rail-group"><h4>适合</h4><div class="rail" id="tpl-age"></div></div>
+      <div class="rail-group"><h4>风格</h4><div class="rail" id="tpl-style"></div></div>
+      <button class="btn small ghost" id="tpl-reset" style="align-self:flex-start">清除筛选</button>
+    </aside>
+    <div class="shop-main">
+      <div class="row between"><span class="muted" id="tpl-count"></span><span class="muted">缩略图按当前内容实时排版，注音默认值按内容年级</span></div>
+      <div class="tpl-grid big hsw" id="tpl-grid"><b class="hs">3</b></div>
+      <div class="row between" style="margin-top:6px"><h3>我的模板</h3><span class="muted">在工作台「存为模板」后出现在这里</span></div>
+      <div class="tpl-grid hsw" id="tpl-mine"><b class="hs">4</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 出纸工作台 ========== -->
+<section class="screen" id="s-composer" aria-label="出纸工作台" hidden>
+  <div class="crumbs"><button data-go="library">资料库</button><span>/</span><button data-go="templates">纸坊</button><span>/</span><span>出纸工作台</span></div>
+  <div class="composer">
+    <aside class="panel hsw"><b class="hs">1</b>
+      <div class="sec">
+        <div class="row between"><h4>内容</h4><button class="btn small ghost" id="cmp-change">换内容</button></div>
+        <div id="cmp-content-title" style="font-family:'Noto Serif SC',serif;font-weight:600"></div>
+        <div class="content-summary" id="cmp-content"></div>
+        <div class="muted" id="cmp-count"></div>
+      </div>
+      <div class="sec">
+        <h4>练习模式</h4>
+        <div class="seg" role="group" id="cmp-mode" style="flex-wrap:wrap">
+          <button data-v="practice" aria-pressed="true">描红练习</button>
+          <button data-v="flow" aria-pressed="false">整篇抄写</button>
+          <button data-v="card" aria-pressed="false">诗词卡片</button>
+          <button data-v="blank" aria-pressed="false">空白纸</button>
+        </div>
+        <div id="cmp-practice-opts" style="display:flex;flex-direction:column;gap:8px">
+          <div class="field"><label>每字：例字数 / 描红数</label>
+            <div class="inline"><input type="number" id="p-example" min="0" max="3" value="1" aria-label="例字数"><span>例</span><input type="number" id="p-trace" min="0" max="6" value="2" aria-label="描红数"><span>描</span><span class="muted">其余空格</span></div>
+          </div>
+        </div>
+        <div class="field" id="cmp-seg-wrap"><label>分句排法</label>
+          <div class="seg" role="group" id="cmp-seg" style="flex-wrap:wrap"><button data-v="phrase" aria-pressed="true">短语不拆行</button><button data-v="sentence" aria-pressed="false">每句一行</button><button data-v="none" aria-pressed="false">连续排</button></div>
+          <div class="muted" id="cmp-seg-hint"></div>
+          <div class="field" id="cmp-pgap-wrap"><label for="p-pgap">短语间距（mm，不占格子）</label>
+            <div class="inline"><input type="range" id="p-pgap" min="0" max="40" step="0.1" value="6" style="flex:1"><input type="number" id="p-pgap-n" min="0" max="40" step="0.1" value="6" aria-label="短语间距，毫米"></div>
+            <div class="muted">短语之间只留这段空白，不占格子；小于格间距时按格间距。</div>
+          </div>
+        </div>
+        <div class="field" id="cmp-punct-wrap"><label>标点</label>
+          <div class="seg" role="group" id="cmp-punct"><button data-v="hide" aria-pressed="true">隐藏</button><button data-v="tail" aria-pressed="false">小字挤在字格角落</button></div>
+          <div class="muted">标点不占格子：隐藏，或以小字放在短语末字的右下角。</div>
+        </div>
+      </div>
+      <div class="sec">
+        <h4>落款</h4>
+        <label class="switch"><span>标题栏</span><input type="checkbox" id="p-title" checked></label>
+        <div class="field"><label for="p-titlesize">标题字号（mm）</label>
+          <div class="inline"><input type="range" id="p-titlesize" min="4" max="30" step="0.5" value="6.5" style="flex:1"><input type="number" id="p-titlesize-n" min="4" max="30" step="0.5" value="6.5" aria-label="标题字号，毫米"></div>
+          <label class="switch" style="min-height:26px"><span>自动：卡片为格子的 0.85 倍，描红纸 6.5 mm</span><input type="checkbox" id="p-titleauto" checked></label>
+          <div class="muted" id="p-title-hint"></div></div>
+        <label class="switch"><span>姓名日期栏</span><input type="checkbox" id="p-sign" checked></label>
+        <label class="switch"><span>校准尺（页角 1 厘米刻度，核对打印比例）</span><input type="checkbox" id="p-ruler" checked></label>
+        <div class="field"><label for="p-name">姓名（可留空）</label><input type="text" id="p-name" placeholder="如：小宝" value=""></div>
+      </div>
+    </aside>
+
+    <div class="preview-col">
+      <div class="preview-toolbar hsw"><b class="hs">2</b>
+        <div class="row">
+          <button class="btn small" id="cmp-prev" aria-label="上一页">‹</button>
+          <span class="num" id="cmp-pageinfo">第 1 页 / 共 1 页</span>
+          <button class="btn small" id="cmp-next" aria-label="下一页">›</button>
+        </div>
+        <div class="row">
+          <div class="seg" role="group" id="cmp-zoom"><button data-v="fit" aria-pressed="true">适合宽度</button><button data-v="actual" aria-pressed="false">实际尺寸</button></div>
+          <span class="tag" id="cmp-size"></span>
+        </div>
+      </div>
+      <div class="paper-wrap" id="cmp-paper"></div>
+      <div class="row between"><span class="muted" id="cal-status">「实际尺寸」需要先校准屏幕</span><button class="btn small ghost" id="btn-cal">校准屏幕</button></div>
+    </div>
+
+    <aside class="panel hsw"><b class="hs">3</b>
+      <div class="sec">
+        <h4>纸张</h4>
+        <div class="field"><label for="p-paper">尺寸</label>
+          <select id="p-paper"><option value="A4">A4 · 210 × 297 mm</option><option value="A5">A5 · 148 × 210 mm</option><option value="B5">B5 · 176 × 250 mm</option><option value="A3">A3 · 297 × 420 mm</option></select></div>
+        <div class="field"><label>方向</label>
+          <div class="seg" role="group" id="p-orient"><button data-v="portrait" aria-pressed="true">纵向</button><button data-v="landscape" aria-pressed="false">横向</button></div></div>
+        <div class="field"><label for="p-margin">边距（mm）</label>
+          <div class="inline"><input type="range" id="p-margin" min="0" max="30" step="0.1" value="8" style="flex:1"><input type="number" id="p-margin-n" min="0" max="30" step="0.1" value="8" aria-label="边距，毫米"></div>
+          <div class="muted" id="p-margin-hint" hidden>多数打印机有 3 到 5 毫米不可打印区域，边距小于 5 毫米时边缘格子可能被裁掉。校准尺、页码、落款会自动保留最小空间。</div></div>
+      </div>
+      <div class="sec">
+        <h4>网格</h4>
+        <div class="field"><label for="p-grid">类型</label>
+          <select id="p-grid">
+            <option value="tian">田字格</option><option value="mi">米字格</option><option value="hui">回宫格</option><option value="jiu">九宫格</option><option value="fang">方格</option><option value="blank">无格线</option><option value="vertical">竖排界栏（仿古）</option>
+          </select></div>
+        <div class="field"><label for="p-cell">格子边长（mm，精确到 0.1）</label>
+          <div class="inline"><input type="range" id="p-cell" min="8" max="200" step="0.1" value="16" style="flex:1"><input type="number" id="p-cell-n" min="8" max="200" step="0.1" value="16" aria-label="格子边长，毫米"></div>
+          <label class="switch" id="p-cardauto-wrap" style="min-height:26px" hidden><span>卡片自动适配一页（自动定格子边长）</span><input type="checkbox" id="p-cardauto" checked></label>
+          <div class="muted" id="p-cell-hint"></div></div>
+        <div class="field"><label for="p-gap">格间距（mm，0 为无间隔）</label>
+          <div class="inline"><input type="range" id="p-gap" min="0" max="20" step="0.1" value="2" style="flex:1"><input type="number" id="p-gap-n" min="0" max="20" step="0.1" value="2" aria-label="格间距，毫米"></div></div>
+        <div class="field"><label>线色</label>
+          <div class="seg" role="group" id="p-linecolor"><button data-v="#5B9C7A" aria-pressed="true">绿</button><button data-v="#C9463A" aria-pressed="false">红</button><button data-v="#8A8A8A" aria-pressed="false">灰</button></div></div>
+      </div>
+      <div class="sec">
+        <h4>画底</h4>
+        <div class="field"><label for="p-bg">底纹</label>
+          <select id="p-bg"><option value="none">无</option>
+            <optgroup label="名画（公有领域扫描）"><option value="qianli">千里江山图 · 王希孟 · 北宋</option><option value="fuchun">富春山居图 · 黄公望 · 元</option><option value="xishan">溪山行旅图 · 范宽 · 北宋</option><option value="zaochun">早春图 · 郭熙 · 北宋</option></optgroup>
+            <optgroup label="纹理"><option value="xuan">宣纸纹理</option><option value="yunwen">如意云纹</option></optgroup>
+          </select>
+          <div class="muted" id="p-bg-src"></div></div>
+        <div id="p-bg-opts" style="display:flex;flex-direction:column;gap:8px">
+          <div class="field"><label>位置</label>
+            <div class="seg" role="group" id="p-bgplace"><button data-v="bands" aria-pressed="true">页眉页脚</button><button data-v="full" aria-pressed="false">整页淡底</button><button data-v="frame" aria-pressed="false">四边</button></div></div>
+          <div class="field"><label for="p-bgop">浓淡 <span class="num" id="p-bgop-v">16%</span></label><input type="range" id="p-bgop" min="0.05" max="0.8" step="0.01" value="0.16"></div>
+        </div>
+        <div class="muted">名画为 Wikimedia Commons 公有领域扫描，画名与出处随选项显示。彩底打印会耗墨，描红纸建议只放页眉页脚或调淡。</div>
+      </div>
+      <div class="sec">
+        <h4>文字</h4>
+        <label class="switch"><span>注音（横排在字上，竖排在字右）</span><input type="checkbox" id="p-pinyin"></label>
+        <div class="muted" id="p-pinyin-hint"></div>
+        <div class="field" id="p-pyscope-wrap"><label>注音范围</label>
+          <div class="seg" role="group" id="p-pyscope"><button data-v="all" aria-pressed="true">全部字</button><button data-v="multi" aria-pressed="false">只标多音字</button></div></div>
+        <div class="field"><label>书写方向</label>
+          <div class="seg" role="group" id="p-dir"><button data-v="h" aria-pressed="true">横排</button><button data-v="v" aria-pressed="false">竖排</button></div></div>
+        <div class="field"><label>描红样式</label>
+          <div class="chips" id="p-tracestyle">
+            <button class="chip" data-v="gray" aria-pressed="true">浅灰</button><button class="chip" data-v="outline" aria-pressed="false">空心</button><button class="chip" data-v="dotted" aria-pressed="false">点线</button><button class="chip" data-v="red" aria-pressed="false">朱红</button>
+          </div></div>
+        <div class="field"><label for="p-font">字体</label>
+          <select id="p-font">
+            <option value="wenkai">霞鹜文楷（开源）</option><option value="mashan">马善政楷书（开源）</option><option value="kaiti">系统楷体</option><option value="serif">思源宋体（开源）</option>
+          </select></div>
+      </div>
+      <div class="sec">
+        <div class="row">
+          <button class="btn" id="cmp-save">存为模板</button>
+          <button class="btn" id="cmp-savework">保存作品</button>
+          <button class="btn primary" id="cmp-print">去打印预览 →</button>
+        </div>
+        <div class="row" id="cmp-save-row" hidden>
+          <input type="text" id="cmp-save-name" placeholder="模板名称，如：一上·描红带拼音" aria-label="模板名称">
+          <button class="btn small primary" id="cmp-save-ok">保存</button>
+        </div>
+        <div class="row" id="cmp-work-row" hidden>
+          <input type="text" id="cmp-work-name" placeholder="作品名称，如：小宝·静夜思描红" aria-label="作品名称">
+          <button class="btn small primary" id="cmp-work-ok">保存</button>
+        </div>
+        <div class="muted">模板只存版式；作品把纸张、参数和内容一起存下来，在个人中心可以再打开、再打印。</div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ========== 打印预览 ========== -->
+<section class="screen" id="s-print" aria-label="打印预览" hidden>
+  <div class="crumbs"><button data-go="composer">出纸工作台</button><span>/</span><span>打印预览</span></div>
+  <div class="screen-head"><div><h1 id="print-title">打印预览</h1><div class="muted" id="print-sub"></div></div>
+    <div class="row"><div class="seg" role="group" id="print-zoom"><button data-v="fit" aria-pressed="true">适合宽度</button><button data-v="actual" aria-pressed="false">实际尺寸</button></div></div>
+  </div>
+  <div class="print">
+    <div class="thumbs hsw" id="print-thumbs"><b class="hs">1</b></div>
+    <div class="preview-col">
+      <div class="paper-wrap hsw" id="print-paper"><b class="hs">2</b></div>
+      <div class="muted">页角的一厘米校准尺用来核对打印比例。打出来量一下不是一厘米，说明打印机做了缩放。</div>
+    </div>
+    <aside class="panel hsw"><b class="hs">3</b>
+      <div class="sec">
+        <h4>打印前请确认</h4>
+        <ul class="tips" style="padding:0;margin:0;list-style:disc">
+          <li>打印对话框里把缩放设为「100%」或「实际大小」，不要选「适合页面」。</li>
+          <li>纸张选 <b id="print-papername">A4</b>，方向与预览一致。</li>
+          <li>描红页建议用普通打印质量，省墨。</li>
+          <li id="print-margin-tip" hidden>这张纸边距小于 5 毫米，请确认打印机支持窄边距或无边距打印，否则边缘格子会被裁掉。</li>
+        </ul>
+      </div>
+      <div class="sec">
+        <h4>导出</h4>
+        <div class="field"><label>格式</label><div class="seg" role="group" id="print-format"><button data-v="pdf" aria-pressed="true">PDF（矢量）</button><button data-v="png" aria-pressed="false">PNG 300 dpi</button></div></div>
+        <label class="switch"><span>双面打印（长边翻转）</span><input type="checkbox" id="print-duplex"></label>
+        <label class="switch"><span>两页合一</span><input type="checkbox" id="print-nup"></label>
+        <label class="switch"><span>小册子拼版（骑马钉）<span class="tag">即将支持</span></span><input type="checkbox" disabled></label>
+        <label class="switch"><span>去水印 <span class="tag">会员</span></span><input type="checkbox" id="print-nowm" disabled></label>
+      </div>
+      <div class="sec">
+        <div class="row">
+          <button class="btn primary" id="print-export">导出 PDF</button>
+          <button class="btn" id="print-now">打印</button>
+          <button class="btn ghost" id="print-test">打印测试页</button>
+        </div>
+        <div class="muted">PDF 为矢量文件，只嵌入用到的字，体积小、打印清晰。</div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ========== 文选 ========== -->
+<section class="screen" id="s-collections" aria-label="文选" hidden>
+  <div class="screen-head"><h1>文选</h1><span class="muted">把篇目按学期、按主题编成一本文选，装订成册打印</span></div>
+  <div class="col-grid">
+    <div class="col-list hsw" id="col-list"><b class="hs">1</b></div>
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div class="card hsw"><b class="hs">2</b>
+        <div class="row between"><h2 id="col-title"></h2><span class="tag" id="col-kind"></span></div>
+        <div class="items" id="col-items"></div>
+        <div class="row"><button class="btn small" data-go="library">从资料库添加篇目</button></div>
+      </div>
+      <div class="card hsw"><b class="hs">3</b>
+        <h4>装订成册</h4>
+        <div class="row" style="gap:16px">
+          <label class="switch" style="gap:6px"><input type="checkbox" id="bk-cover" checked> 封面</label>
+          <label class="switch" style="gap:6px"><input type="checkbox" id="bk-toc" checked> 目录</label>
+          <label class="switch" style="gap:6px"><input type="checkbox" id="bk-trans"> 附译文页</label>
+          <label class="switch" style="gap:6px"><input type="checkbox" id="bk-pagenum" checked> 页码</label>
+        </div>
+        <div class="muted">纸张与网格沿用出纸工作台当前的设置：<span id="bk-params"></span></div>
+        <div class="booklet-summary" id="bk-summary"></div>
+        <div class="row"><button class="btn primary" id="bk-go">装订成册并预览 →</button><button class="btn" data-go="composer">调整纸张设置</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 个人中心 ========== -->
+<section class="screen" id="s-me" aria-label="个人中心" hidden>
+  <div class="screen-head"><div><h1>个人中心</h1><div class="muted">游客模式 · 数据只保存在本机浏览器 · 导出带水印</div></div><button class="btn" id="me-login">登录后云同步</button></div>
+  <div class="tabs" role="tablist" id="me-tabs">
+    <button role="tab" data-tab="works" aria-selected="true">我的作品</button>
+    <button role="tab" data-tab="templates" aria-selected="false">我的模板</button>
+    <button role="tab" data-tab="books" aria-selected="false">我的文选</button>
+    <button role="tab" data-tab="exports" aria-selected="false">导出记录</button>
+    <button role="tab" data-tab="plan" aria-selected="false">会员方案</button>
+  </div>
+  <div class="tpl-grid big hsw" id="me-works"><b class="hs">1</b></div>
+  <div class="list hsw" id="me-templates" hidden><b class="hs">2</b></div>
+  <div class="list" id="me-books" hidden></div>
+  <div class="list hsw" id="me-exports" hidden><b class="hs">3</b></div>
+  <div class="card hsw" id="me-plan" hidden><b class="hs">4</b>
+    <h4>方案对比</h4>
+    <div class="tablewrap"><table class="plan">
+      <thead><tr><th>能力</th><th>游客</th><th>登录免费</th><th>会员</th><th>机构版</th></tr></thead>
+      <tbody>
+        <tr><td>选内容出纸、PDF 导出</td><td class="y">有，带水印</td><td class="y">有，带水印</td><td class="y">无水印</td><td class="y">无水印</td></tr>
+        <tr><td>保存作品、模板与文选</td><td class="n">仅本机</td><td class="y">云同步</td><td class="y">云同步</td><td class="y">团队共享</td></tr>
+        <tr><td>文选装订成册</td><td class="n">最多 10 页</td><td class="n">最多 20 页</td><td class="y">不限</td><td class="y">不限</td></tr>
+        <tr><td>高级模板、竖排线装、笔顺图</td><td class="n">无</td><td class="n">部分</td><td class="y">全部</td><td class="y">全部</td></tr>
+        <tr><td>上传自有字体</td><td class="n">无</td><td class="n">无</td><td class="y">有</td><td class="y">有</td></tr>
+        <tr><td>作品分享、自定义品牌、班级布置</td><td class="n">无</td><td class="n">无</td><td class="n">仅分享</td><td class="y">全部</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ========== 流程总览 ========== -->
+<section class="screen" id="s-flow" aria-label="流程总览" hidden>
+  <div class="crumbs"><button data-go="home">首页</button><span>/</span><span>流程总览（原型说明层）</span></div>
+  <div class="screen-head"><h1>流程总览</h1><span class="muted">点任一方块跳到对应页面；蓝底是核心链路</span></div>
+  <div class="flow hsw"><b class="hs">1</b>
+    <button class="fbox core" data-go="library"><span class="step">第一步</span><b>选内容</b><span>资料库 · 作品详情 · 自己的文字</span></button>
+    <button class="fbox core" data-go="templates"><span class="step">第二步</span><b>选纸张</b><span>纸坊模板 · 我的模板</span></button>
+    <button class="fbox core" data-go="composer"><span class="step">第三步</span><b>预览与调整</b><span>出纸工作台 · 参数面板 · 实时分页</span></button>
+    <button class="fbox core" data-go="print"><span class="step">第四步</span><b>打印或导出</b><span>打印预览 · 校准尺 · 导出记录</span></button>
+    <button class="fbox" data-go="home"><span class="step">入口</span><b>首页</b><span>今日一页 · 三个起点 · 最近的纸</span></button>
+    <button class="fbox" data-go="custom"><span class="step">分支</span><b>自己的文字</b><span>自动注音 · 多音字核对</span></button>
+    <button class="fbox" data-go="collections"><span class="step">进阶</span><b>文选</b><span>篇目 · 封面 · 目录 · 装订成册</span></button>
+    <button class="fbox" data-go="me"><span class="step">账户</span><b>个人中心</b><span>作品 · 模板 · 文选 · 导出记录</span></button>
+  </div>
+  <div class="card">
+    <h4>页面一览</h4>
+    <div class="tablewrap"><table class="spec">
+      <thead><tr><th>页面</th><th>目的</th><th>进入方式</th><th>离开去向</th><th>PRD</th></tr></thead>
+      <tbody>
+        <tr><td>首页</td><td>三十秒内让家长拿到今天要打的纸</td><td>打开产品 / 顶栏搜索</td><td>工作台 / 资料库 / 自定义</td><td>2.3 核心链路</td></tr>
+        <tr><td>资料库</td><td>按分类、年级、朝代找内容</td><td>导航 / 首页入口</td><td>作品详情</td><td>3.1.1 至 3.1.3</td></tr>
+        <tr><td>作品详情</td><td>看注释译文，按篇、句、字选取</td><td>资料库卡片</td><td>纸坊 / 工作台 / 文选</td><td>3.1.2、3.1.3</td></tr>
+        <tr><td>自己的文字</td><td>粘贴文本、自动注音、核对多音字</td><td>首页入口</td><td>纸坊</td><td>3.1.5</td></tr>
+        <tr><td>纸坊</td><td>按用途、排版、年龄、风格挑纸，或从空白开始设计</td><td>导航 / 详情页</td><td>工作台</td><td>3.2.6</td></tr>
+        <tr><td>出纸工作台</td><td>调参数，实时看分页结果；可存为模板或保存作品</td><td>纸坊 / 首页 / 个人中心</td><td>打印预览</td><td>3.2、3.3.1、3.3.2、3.3.5</td></tr>
+        <tr><td>打印预览</td><td>逐页检查，选导出方式，看打印提示</td><td>工作台 / 成册</td><td>导出记录</td><td>3.3.3</td></tr>
+        <tr><td>文选</td><td>编篇目，装订成册</td><td>导航 / 详情页加入</td><td>打印预览</td><td>3.1.4、3.3.4</td></tr>
+        <tr><td>个人中心</td><td>我的作品、模板、文选、导出记录、方案</td><td>导航</td><td>工作台 / 打印预览</td><td>3.3.5、3.4、3.5</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+    </div></div>
+
+    <aside class="drawer" id="drawer" aria-label="本页说明">
+      <div class="row between"><h2 id="dr-title">本页说明</h2><div class="row"><button class="btn small" id="btn-annot" aria-pressed="false">标注</button><button class="btn small ghost" id="dr-close">收起</button></div></div>
+      <div class="muted">这是原型说明层，正式产品里不会出现。<button class="btn small ghost" data-go="flow" style="min-height:24px;padding:0 6px">查看流程总览 →</button></div>
+      <section><h4>目的</h4><p id="dr-goal" style="font-size:13.5px;color:var(--ink-2)"></p></section>
+      <section><h4>标注对照（开启「标注」查看编号）</h4><ol class="notes" id="dr-notes"></ol></section>
+      <section><h4>主要交互</h4><ul id="dr-inter"></ul></section>
+      <section><h4>状态与边界</h4><ul id="dr-edge"></ul></section>
+      <section><h4>对应 PRD</h4><p class="prd" id="dr-prd"></p></section>
+    </aside>
+  </div>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+<button class="proto-pill" id="btn-drawer" aria-pressed="false">原型说明</button>
+<div class="modal-backdrop" id="modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="row between"><h2 id="modal-title"></h2><button class="btn small ghost" id="modal-close" aria-label="关闭">关闭</button></div>
+    <div class="body" id="modal-body"></div>
+  </div>
+</div>
+<script>
+/* ===================== 数据 ===================== */
+const WORKS=[
+ {id:'jingyesi',tp:'jys',title:'静夜思',author:'李白',dynasty:'唐',cat:'shici',grade:'一年级',tags:['必背','思乡','五言绝句'],
+  lines:[['床前明月光，','chuáng qián míng yuè guāng'],['疑是地上霜。','yí shì dì shàng shuāng'],['举头望明月，','jǔ tóu wàng míng yuè'],['低头思故乡。','dī tóu sī gù xiāng']],
+  notes:'静夜思：在安静的夜里产生的思念。疑：好像。举头：抬头。故乡：出生长大的地方。',trans:'明亮的月光洒在床前，好像地上结了一层白霜。抬头望着天上的明月，低头思念起远方的家乡。',edition:'所据版本：《全唐诗》卷一六五。校对：内容组，2026-09-10，第 2 版。'},
+ {id:'chunxiao',tp:'cx',title:'春晓',author:'孟浩然',dynasty:'唐',cat:'shici',grade:'一年级',tags:['必背','春天','五言绝句'],
+  lines:[['春眠不觉晓，','chūn mián bù jué xiǎo'],['处处闻啼鸟。','chù chù wén tí niǎo'],['夜来风雨声，','yè lái fēng yǔ shēng'],['花落知多少。','huā luò zhī duō shǎo']],
+  notes:'晓：天亮。啼鸟：鸟叫。知多少：不知道有多少。',trans:'春天睡得香，不知不觉天就亮了，到处都能听到鸟叫。想起夜里的风雨声，不知道打落了多少花。',edition:'所据版本：《全唐诗》卷一六〇。校对：内容组，2026-09-10。'},
+ {id:'minnong',tp:'mn',title:'悯农',author:'李绅',dynasty:'唐',cat:'shici',grade:'一年级',tags:['必背','劳动','五言绝句'],
+  lines:[['锄禾日当午，','chú hé rì dāng wǔ'],['汗滴禾下土。','hàn dī hé xià tǔ'],['谁知盘中餐，','shuí zhī pán zhōng cān'],['粒粒皆辛苦。','lì lì jiē xīn kǔ']],
+  notes:'锄禾：给禾苗松土除草。日当午：太阳正在头顶。皆：都。',trans:'农民在正午的烈日下锄地，汗水滴进禾苗下的泥土。谁知道碗里的饭，每一粒都来自辛苦的劳动。',edition:'所据版本：《全唐诗》卷四八三。校对：内容组，2026-09-10。'},
+ {id:'yonge',tp:'ye',title:'咏鹅',author:'骆宾王',dynasty:'唐',cat:'shici',grade:'一年级',tags:['必背','动物','启蒙'],
+  lines:[['鹅，鹅，鹅，','é é é'],['曲项向天歌。','qū xiàng xiàng tiān gē'],['白毛浮绿水，','bái máo fú lǜ shuǐ'],['红掌拨清波。','hóng zhǎng bō qīng bō']],
+  notes:'曲项：弯着脖子。歌：鸣叫。拨：划水。',trans:'鹅呀鹅呀，弯着脖子朝天叫。白色的羽毛浮在绿水上，红色的脚掌划开清清的水波。',edition:'所据版本：《全唐诗》卷七九。校对：内容组，2026-09-10。'},
+ {id:'dengguanquelou',tp:'dgql',title:'登鹳雀楼',author:'王之涣',dynasty:'唐',cat:'shici',grade:'二年级',tags:['必背','登高','五言绝句'],
+  lines:[['白日依山尽，','bái rì yī shān jìn'],['黄河入海流。','huáng hé rù hǎi liú'],['欲穷千里目，','yù qióng qiān lǐ mù'],['更上一层楼。','gèng shàng yì céng lóu']],
+  notes:'依：靠着。尽：落下。欲：想要。穷：看尽。',trans:'太阳靠着山落下去，黄河朝着大海流去。想看到更远的地方，就要再登上一层楼。',edition:'所据版本：《全唐诗》卷二五三。「一层楼」的「一」按变调标 yì。校对：内容组，2026-09-12。'},
+ {id:'sanzijing',tp:'szj',title:'三字经（节选）',author:'王应麟',dynasty:'宋',cat:'mengxue',grade:'学前',tags:['蒙学','三言'],
+  lines:[['人之初，性本善。','rén zhī chū xìng běn shàn'],['性相近，习相远。','xìng xiāng jìn xí xiāng yuǎn'],['苟不教，性乃迁。','gǒu bú jiào xìng nǎi qiān'],['教之道，贵以专。','jiào zhī dào guì yǐ zhuān'],['昔孟母，择邻处。','xī mèng mǔ zé lín chǔ'],['子不学，断机杼。','zǐ bù xué duàn jī zhù'],['窦燕山，有义方。','dòu yān shān yǒu yì fāng'],['教五子，名俱扬。','jiào wǔ zǐ míng jù yáng'],['养不教，父之过。','yǎng bú jiào fù zhī guò'],['教不严，师之惰。','jiào bù yán shī zhī duò'],['子不学，非所宜。','zǐ bù xué fēi suǒ yí'],['幼不学，老何为。','yòu bù xué lǎo hé wéi'],['玉不琢，不成器。','yù bù zhuó bù chéng qì'],['人不学，不知义。','rén bù xué bù zhī yì']],
+  notes:'初：开始。习：后天的习惯。苟：如果。迁：改变。专：专心。择邻处：选择邻居居住。机杼：织布机。义方：做人的正道。',trans:'人刚出生时本性都是善良的，天性相近，只是后天的习惯让人相差越来越远。如果不教育，本性就会变坏。教育的关键在于专心持久。',edition:'所据版本：清代王相训诂本。校对：内容组，2026-09-08。'},
+ {id:'baijiaxing',tp:'bjx',title:'百家姓（节选）',author:'佚名',dynasty:'宋',cat:'mengxue',grade:'学前',tags:['蒙学','姓氏'],
+  lines:[['赵钱孙李，周吴郑王。','zhào qián sūn lǐ zhōu wú zhèng wáng'],['冯陈褚卫，蒋沈韩杨。','féng chén chǔ wèi jiǎng shěn hán yáng']],
+  notes:'百家姓成书于北宋，以「赵」开头是因为宋朝皇帝姓赵。',trans:'这是姓氏的排列，没有句意，用于识字与记诵。',edition:'所据版本：通行本。校对：内容组，2026-09-08。'},
+ {id:'qianziwen',tp:'qzw',title:'千字文（节选）',author:'周兴嗣',dynasty:'南朝',cat:'mengxue',grade:'学前',tags:['蒙学','四言','书法常用'],
+  lines:[['天地玄黄，宇宙洪荒。','tiān dì xuán huáng yǔ zhòu hóng huāng'],['日月盈昃，辰宿列张。','rì yuè yíng zè chén xiù liè zhāng'],['寒来暑往，秋收冬藏。','hán lái shǔ wǎng qiū shōu dōng cáng'],['闰余成岁，律吕调阳。','rùn yú chéng suì lǜ lǚ tiáo yáng'],['云腾致雨，露结为霜。','yún téng zhì yǔ lù jié wéi shuāng'],['金生丽水，玉出昆冈。','jīn shēng lì shuǐ yù chū kūn gāng'],['剑号巨阙，珠称夜光。','jiàn hào jù quē zhū chēng yè guāng'],['果珍李柰，菜重芥姜。','guǒ zhēn lǐ nài cài zhòng jiè jiāng']],
+  notes:'玄：黑色。洪荒：广大蒙昧。昃：太阳偏西。辰宿：星辰。闰余：闰月。律吕：音律，借指节气。昆冈：昆仑山。巨阙：古剑名。柰：一种果子。',trans:'天是黑的，地是黄的，宇宙广大而蒙昧。太阳有升有落，月亮有圆有缺，星辰排列在天上。寒暑交替，秋天收获，冬天储藏。',edition:'所据版本：智永真草千字文。「宿」在此读 xiù。校对：内容组，2026-09-08。'},
+ {id:'dizigui',tp:'dzg',title:'弟子规（节选）',author:'李毓秀',dynasty:'清',cat:'mengxue',grade:'学前',tags:['蒙学','三言','规范'],
+  lines:[['弟子规，圣人训。','dì zǐ guī shèng rén xùn'],['首孝悌，次谨信。','shǒu xiào tì cì jǐn xìn'],['泛爱众，而亲仁。','fàn ài zhòng ér qīn rén'],['有余力，则学文。','yǒu yú lì zé xué wén']],
+  notes:'训：教导。悌：敬爱兄长。谨：谨慎。泛爱众：广泛地爱众人。',trans:'弟子规是圣人的教导。首先要孝顺父母、友爱兄弟，其次要谨慎守信，博爱众人，亲近有仁德的人。做到这些还有余力，再去学习文化知识。',edition:'所据版本：通行本。校对：内容组，2026-09-08。'},
+ {id:'shenglv',tp:'slqm',title:'声律启蒙（节选）',author:'车万育',dynasty:'清',cat:'mengxue',grade:'三年级',tags:['蒙学','对仗','韵律'],
+  lines:[['云对雨，雪对风，晚照对晴空。','yún duì yǔ xuě duì fēng wǎn zhào duì qíng kōng'],['来鸿对去燕，宿鸟对鸣虫。','lái hóng duì qù yàn sù niǎo duì míng chóng']],
+  notes:'晚照：夕阳。鸿：大雁。宿鸟：归巢的鸟。',trans:'云对雨，雪对风，傍晚的夕阳对晴朗的天空。飞来的大雁对离去的燕子，归巢的鸟对鸣叫的虫。',edition:'所据版本：通行本。「宿」在此读 sù。校对：内容组，2026-09-08。'},
+ {id:'lunyu',tp:'lyxe',title:'论语·学而（节选）',author:'孔子及弟子',dynasty:'先秦',cat:'guwen',grade:'四年级',tags:['古文','儒家','多音字'],
+  lines:[['学而时习之，不亦说乎？','xué ér shí xí zhī bú yì yuè hū'],['有朋自远方来，不亦乐乎？','yǒu péng zì yuǎn fāng lái bú yì lè hū'],['人不知而不愠，不亦君子乎？','rén bù zhī ér bú yùn bú yì jūn zǐ hū']],
+  notes:'时：按时。说：同「悦」，高兴，读 yuè。愠：生气。君子：有修养的人。',trans:'学了知识按时温习，不也很高兴吗？有朋友从远方来，不也很快乐吗？别人不了解我，我也不生气，不也是君子吗？',edition:'所据版本：中华书局《论语译注》。「说」读 yuè、「乐」读 lè。校对：内容组，2026-09-09。'},
+ {id:'shizi-1-1',tp:'szb',title:'一年级上册 识字表 · 第一单元',author:'部编版语文',dynasty:'',cat:'hanzi',grade:'一年级',tags:['识字表','教材同步','第一单元'],
+  lines:[['天地人','tiān dì rén'],['你我他','nǐ wǒ tā'],['一二三四五','yī èr sān sì wǔ'],['上下','shàng xià'],['口耳目','kǒu ěr mù'],['手足','shǒu zú'],['日月水火','rì yuè shuǐ huǒ'],['山石田禾','shān shí tián hé']],
+  notes:'本单元识字表共 22 字，其中「一、二、三、上」等为写字表要求会写。',trans:'识字表内容按教材顺序排列，可按行选取。',edition:'所据版本：部编版一年级上册（2024 印次）。校对：内容组，2026-09-12。'},
+];
+const CATS=[{id:'all',n:'全部'},{id:'mengxue',n:'蒙学经典'},{id:'shici',n:'诗词'},{id:'guwen',n:'古文选段'},{id:'hanzi',n:'汉字与识字表'},{id:'more',n:'成语·节气（即将上线）'}];
+
+const TEMPLATES=[
+ {id:'tian-trace',name:'田字格描红',use:'描红',dir:'横排',age:['低幼','一年级'],style:'简约',desc:'一例二描三空，横排，低年级默认带拼音，最常用的一张',params:{mode:'practice',grid:'tian',pinyin:true,trace:'gray',example:1,traceN:2,dir:'h',cell:16,gap:2,font:'wenkai',linecolor:'#5B9C7A'}},
+ {id:'mi-copy',name:'米字格临摹',use:'临摹',dir:'横排',age:['一年级','二年级以上','成人'],style:'简约',desc:'空心例字，先描后临，适合写字表',params:{mode:'practice',grid:'mi',pinyin:false,trace:'outline',example:1,traceN:1,cell:18,gap:2,dir:'h',font:'mashan',linecolor:'#C9463A'}},
+ {id:'tian-flow',name:'整篇描红',use:'抄写',dir:'横排',age:['一年级','二年级以上'],style:'简约',desc:'一字一格，短语不拆行，整首描一遍',params:{mode:'flow',grid:'tian',pinyin:true,trace:'gray',cell:14,gap:2,dir:'h',font:'wenkai',linecolor:'#5B9C7A',seg:'phrase',phraseGap:6}},
+ {id:'vertical-classic',name:'竖排线装',use:'抄写',dir:'竖排',age:['二年级以上','成人'],style:'古风',desc:'仿古版心与鱼尾，从右往左抄，每句一列',params:{mode:'flow',grid:'vertical',pinyin:false,trace:'gray',cell:13,gap:0,dir:'v',font:'wenkai',linecolor:'#6B6B6B',margin:14,seg:'sentence',phraseGap:8,bg:'xuan',bgPlace:'full',bgOpacity:0.3}},
+ {id:'vertical-trace',name:'竖排描红',use:'描红',dir:'竖排',age:['一年级','二年级以上'],style:'古风',desc:'每列一字，例字在上，往下描，默认不带拼音',params:{mode:'practice',grid:'tian',pinyin:false,trace:'red',example:1,traceN:3,cell:16,gap:2,dir:'v',font:'wenkai',linecolor:'#C9463A'}},
+ {id:'poem-card',name:'诗词卡片',use:'卡片',dir:'横排',age:['低幼','一年级','二年级以上'],style:'古风',desc:'整首居中，默认不带拼音，可贴墙可收藏',params:{mode:'card',grid:'blank',gap:1,punct:'tail',cardAuto:true,pinyin:false,font:'mashan',paper:'A5',margin:12}},
+ {id:'card-tian',name:'田字格诗卡',use:'卡片',dir:'横排',age:['一年级','二年级以上'],style:'简约',desc:'每句一行放进田字格，带拼音，可以直接描',params:{mode:'card',grid:'tian',cell:14,gap:2,cardAuto:false,punct:'hide',pinyin:true,font:'wenkai',paper:'A5',margin:12,linecolor:'#C9463A'}},
+ {id:'card-shanshui',name:'山水诗笺',use:'卡片',dir:'横排',age:['低幼','一年级','二年级以上','成人'],style:'古风',desc:'千里江山图淡底，整首居中，像一张诗笺',params:{mode:'card',grid:'blank',gap:1,punct:'tail',cardAuto:true,pinyin:false,font:'mashan',paper:'A5',margin:14,bg:'qianli',bgPlace:'full',bgOpacity:0.5}},
+ {id:'tian-shanshui',name:'山水描红',use:'描红',dir:'横排',age:['一年级','二年级以上'],style:'古风',desc:'页眉页脚一带富春山居图，格子区干净省墨',params:{mode:'practice',grid:'tian',pinyin:true,trace:'gray',example:1,traceN:2,dir:'h',cell:16,gap:2,font:'wenkai',linecolor:'#8A8A8A',bg:'fuchun',bgPlace:'bands',bgOpacity:0.4}},
+ {id:'card-xishan',name:'溪山诗笺',use:'卡片',dir:'横排',age:['二年级以上','成人'],style:'古风',desc:'溪山行旅图满幅淡底，适合抄整首',params:{mode:'card',grid:'blank',gap:1,punct:'tail',cardAuto:true,pinyin:false,font:'wenkai',paper:'A5',margin:14,bg:'xishan',bgPlace:'full',bgOpacity:0.3}},
+ {id:'hui-large',name:'回宫格大字',use:'临摹',dir:'横排',age:['低幼'],style:'简约',desc:'二十二毫米大格，低幼握笔期用',params:{mode:'practice',grid:'hui',pinyin:true,trace:'dotted',example:1,traceN:2,cell:22,gap:2,dir:'h',font:'mashan',linecolor:'#5B9C7A'}},
+ {id:'blank-tian',name:'空白田字格',use:'空白',dir:'横排',age:['低幼','一年级','二年级以上','成人'],style:'简约',desc:'只有格子，带拼音格，自由练',params:{mode:'blank',grid:'tian',pinyin:true,cell:16,gap:2,dir:'h',linecolor:'#5B9C7A'}},
+ {id:'blank-mi',name:'空白米字格',use:'空白',dir:'横排',age:['一年级','二年级以上','成人'],style:'简约',desc:'只有格子，不带拼音',params:{mode:'blank',grid:'mi',pinyin:false,cell:18,gap:2,dir:'h',linecolor:'#C9463A'}},
+];
+
+const COLLECTIONS=[
+ {id:'sys-g1',name:'一年级上 · 必背古诗',kind:'官方文选',items:['jingyesi','yonge','chunxiao','minnong']},
+ {id:'sys-mx',name:'蒙学入门四种',kind:'官方文选',items:['sanzijing','baijiaxing','qianziwen','dizigui']},
+ {id:'my-1',name:'小宝这学期',kind:'我的文选',items:['jingyesi','dengguanquelou','shizi-1-1']},
+];
+
+/* 演示用注音字表：正式版接 pinyin-pro */
+const PY={学:['xué'],而:['ér'],时:['shí'],习:['xí'],之:['zhī'],不:['bù'],亦:['yì'],说:['shuō','yuè','shuì'],乎:['hū'],有:['yǒu'],朋:['péng'],自:['zì'],远:['yuǎn'],方:['fāng'],来:['lái'],乐:['lè','yuè'],春:['chūn'],眠:['mián'],觉:['jué','jiào'],晓:['xiǎo'],处:['chù','chǔ'],闻:['wén'],啼:['tí'],鸟:['niǎo'],人:['rén'],知:['zhī'],愠:['yùn'],君:['jūn'],子:['zǐ'],夜:['yè'],风:['fēng'],雨:['yǔ'],声:['shēng'],花:['huā'],落:['luò','lào','là'],多:['duō'],少:['shǎo','shào'],长:['cháng','zhǎng'],行:['xíng','háng'],好:['hǎo','hào'],了:['le','liǎo'],和:['hé','hè','huó'],小:['xiǎo'],燕:['yàn','yān'],穿:['chuān'],衣:['yī'],年:['nián'],天:['tiān'],地:['dì','de'],上:['shàng'],下:['xià'],大:['dà','dài'],中:['zhōng','zhòng'],国:['guó'],我:['wǒ'],你:['nǐ'],他:['tā'],爱:['ài'],妈:['mā'],爸:['bà'],家:['jiā'],月:['yuè'],日:['rì'],水:['shuǐ'],火:['huǒ'],山:['shān'],石:['shí'],田:['tián'],禾:['hé'],明:['míng'],光:['guāng'],床:['chuáng'],前:['qián'],头:['tóu'],思:['sī'],故:['gù'],乡:['xiāng'],一:['yī'],二:['èr'],三:['sān'],四:['sì'],五:['wǔ'],口:['kǒu'],耳:['ěr'],目:['mù'],手:['shǒu'],足:['zú']};
+
+/* ===================== 每页说明 ===================== */
+const NOTES={
+ home:{title:'首页',goal:'让家长在三十秒内拿到今天要打的那张纸，同时给三类用户各一个起点。',
+  notes:['今日一页：默认推一首诗，按节气和常用年级轮换。主按钮把内容和默认模板一起带进工作台，不再让用户选。','纸面缩略图由真实排版引擎渲染，和工作台里看到的一致，不是贴图。','三个起点对应三种动作：在库里找、用自己的文字、按教材单元取字。','最近用过的纸：最近使用的模板，点一下就把当前内容套进去。','我的文选入口：教师和家长的长期资产，装订成册从这里进。'],
+  inter:['点「打印今天这张纸」直接到工作台，内容与模板已就位。','点起点卡片分别进资料库、自己的文字、识字表分类。','点模板缩略图进工作台并套用该模板。'],
+  edge:['游客与登录用户首页结构一致，登录后「最近」与「文选」来自云端。','断网时今日一页读本地缓存。','顶栏搜索直接进资料库并带上关键词。'],
+  prd:'2.3 核心链路 · 3.1.4 文选 · 3.2.6 模板'},
+ library:{title:'资料库',goal:'按分类、年级、朝代、关键词快速定位到一篇内容，并能跳过详情直接出纸。',
+  notes:['左侧一级分类，数字是可用作品数。「成语·节气」在 V2 才有内容。','检索框支持标题、作者、首句和拼音首字母，年级与朝代筛选可叠加。','作品卡显示首句与标签，「出纸」按钮跳过详情直接去选纸。'],
+  inter:['输入即筛选，无需回车。','点卡片正文进作品详情，点「出纸」进纸坊。','分类切换保留当前关键词。'],
+  edge:['无结果时提示换关键词，并给「用自己的文字」入口。','识字表按教材单元组织，作者位显示教材版本。','每篇内容都记录所据版本，详情页可查。'],
+  prd:'3.1.1 内容范围 · 3.1.3 浏览与检索'},
+ work:{title:'作品详情',goal:'看清注释与译文，并决定带走整篇、几句还是几个字。',
+  notes:['拼音开关、简繁切换、选取粒度。粒度决定下一步带走什么，繁体在 V2 开放。','正文区：选句模式点整行，选字模式点单字，已选高亮。标点不可选。','注释、译文、版本三个页签，版本页记录所据版本与校对人。','出纸操作区显示已选范围。「直接用田字格描红」是最短路径，也可加入文选。'],
+  inter:['切换粒度后正文区进入对应的可点状态。','「选纸张」进纸坊，「直接用田字格描红」进工作台。','「加入文选」默认加到我的第一本文选。'],
+  edge:['选句或选字模式下未选任何内容时，出纸按钮禁用并提示。','多音字在句中读音与字级全部读音分开记录。'],
+  prd:'3.1.2 数据结构 · 3.1.3 详情与粒度 · 3.1.6 版本'},
+ custom:{title:'用自己的文字',goal:'把任意文本变成可出纸的内容。默认不注音、直接出纸；只有用户要拼音时才多出核对多音字这一步。',
+  notes:['输入区按标点与换行断句。「需要拼音」默认关着，关着时一步直接出纸。','逐字核对表只在开启拼音并点「自动注音」后出现：多音字整行高亮并给下拉，改音后可存成个人规则，下次同一个词自动套用。'],
+  inter:['关着「需要拼音」时点「直接出纸」进纸坊，内容不带拼音。','开启后点「自动注音」生成核对表，改任一多音字读音，内容随之更新，再点「用它出纸」。','在工作台临时打开注音时会按默认读音补注，并提示回来核对。'],
+  edge:['未收录的字标为「待标注」，正式版接 pinyin-pro 做整句注音。','超过五百字提示分批处理。','自定义内容默认私有，公开需审核。'],
+  prd:'3.1.5 自定义内容与导入'},
+ templates:{title:'纸坊',goal:'挑一张纸，或者从空白开始设计。四个维度筛选，缩略图所见即所得，规格一眼看清。',
+  notes:['顶部：当前正在为哪篇内容选纸，可换内容；「自己设计一张」从空白纸进工作台，走的是纸张设计器路径。','筛选栏四个维度：用途（描红、临摹、抄写、卡片、空白）、排版（横竖）、适合年龄、风格。维度可叠加。','纸张卡：缩略图用当前内容实时渲染；规格标签标出纸张、格子、排版和注音默认值；「用这张纸」进工作台。','我的模板：在工作台「存为模板」后出现在这里，和系统模板同样可套用。'],
+  inter:['点筛选项即刷新，「清除筛选」回到全部。','点缩略图或「用这张纸」进工作台并套用参数。','我的模板可使用或删除。'],
+  edge:['模板只保存版式参数，不保存内容。作品才是纸张加内容的组合，在工作台保存。','注音默认值由模板与内容年级共同决定，卡上直接标出。','游客的模板存在本机浏览器，登录后合并到云端。'],
+  prd:'3.2.6 模板系统 · 3.2.7 编辑器'},
+ composer:{title:'出纸工作台',goal:'调参数，实时看到分页结果。所有尺寸以毫米为单位，与打印一致。',
+  notes:['内容与练习模式：内容来自上一步，可随时换。四种模式：描红练习、整篇描红、诗词卡片、空白纸。参数面板的「画底」可选四幅公版名画（千里江山图、富春山居图、溪山行旅图、早春图）或宣纸纹理、云纹，位置可选整页、页眉页脚、四边，浓淡可调；长卷在整页模式下作为横幅铺在下方，立轴满幅铺开。整篇描红有「分句排法」：短语不拆行（三字经、千字文自动对齐成列）、每句一行、连续排。短语之间只留毫米级的空白，可调，不占格子；标点不占格，隐藏或小字挤在短语末字右下角。描红练习模式不排标点。','预览工具栏：翻页、适合宽度或实际尺寸。','参数面板：纸张、网格、文字。注音是可选项，默认值由模板与内容决定（识字表、学前与一年级开，其余关），可改为只标多音字。任何改动立即重排并重新分页。「存为模板」只存版式；「保存作品」把纸张、参数、内容一起存进个人中心。'],
+  inter:['「换内容」直接弹选择框，换篇目或粘一段文字，纸张与参数保持不变；作品详情页也有「用当前纸张设置出纸」。','诗词卡片和描红纸共用一套格子参数：正文字号就是格子边长，字距就是格间距，网格可选无格、田字格、米字格。卡片默认自动适配一页（自动定格子边长），取消后按格子边长分页。标题、作者、落款等装饰字不进格子，字号按比例派生，落款栏可手动改标题字号，作者随之。','改格子边长、格间距、边距或纸张，会重新算出每页能放几列几行，整块网格在内容区内水平、垂直居中，页数随之变化。格子边长上限按当前纸张动态计算，最大一页一格；格间距设 0 时相邻格子共用边线。','切竖排后从右往左排，注音移到字右侧。','点「去打印预览」把当前所有页带过去。'],
+  edge:['画底用公有领域名画的高清扫描，来源限台北故宫 Open Data、Wikimedia Commons 等允许自由使用的库，逐张记录出处；满页彩底耗墨，描红纸默认只放页眉页脚。','边距默认 8 毫米，可设为 0；小于 5 毫米时提示打印机不可打印区域可能裁切，校准尺、页码、落款自动保留最小空间。','竖排界栏（仿古）忽略注音，正式版在字右侧注音。','A3 需要打印机支持，导出时提示。','「实际尺寸」依赖屏幕校准：用银行卡对比方框、保存比例后，屏幕上的格子就是真实大小。'],
+  prd:'3.2.1 至 3.2.5 纸张设计器 · 3.3.1 分页 · 3.3.2 预览 · 3.3.5 作品'},
+ print:{title:'打印预览',goal:'逐页检查，选导出方式，并在打印前把最容易出错的缩放问题说清楚。',
+  notes:['页面缩略图，点击切换大图。','大图与页角的一厘米校准尺。它只是一小段矢量刻度，不影响格子和比例；离纸边至少 5 毫米，避开打印机不可打印区域；可在工作台落款区关掉。','打印提示与导出选项。导出后生成记录，可在个人中心查看。'],
+  inter:['点「导出 PDF」弹出生成进度，完成后记入导出记录。','点「打印」打开打印对话框，缩放锁定在 100%，防止格子被缩。','点「打印测试页」先打一张只含校准尺的纸。'],
+  edge:['原型里导出与打印只做模拟，不产生真实文件。','游客导出带水印，会员去水印。','小册子拼版与出血在 V2。','打印对话框是产品自己的，不是浏览器的，这样才能锁定缩放。'],
+  prd:'3.3.3 导出与打印'},
+ collections:{title:'文选',goal:'文选是一组篇目的有序组合，按学期或主题编起来，装订成册时自动加封面和目录。',
+  notes:['文选列表：官方文选不可改但可复制，我的文选可排序与增删。','篇目：上移、下移、移除，或从资料库继续添加。','装订成册：封面、目录、译文页、页码可选，纸张与网格沿用工作台当前设置。'],
+  inter:['选文选后右侧刷新。','改勾选项后页数统计实时更新。','点「装订成册并预览」进打印预览，封面与目录在前。'],
+  edge:['游客最多装订十页，登录免费二十页，会员不限。','译文页只对有译文的篇目生成。','文选只记篇目，不记纸张；同一本换一套纸就是另一本册子。','命名候选：文选（当前）、课本、功课、篇单，见决策 D-009。'],
+  prd:'3.1.4 文选 · 3.3.4 装订成册'},
+ me:{title:'个人中心',goal:'用户的全部资产都在这里：作品、模板、文选、导出记录，以及方案说明。',
+  notes:['我的作品：纸张加内容的组合，从工作台「保存作品」而来。可再打开继续改，也可直接打印。','我的模板：只存版式，可套任何内容。','导出记录：每次导出的文件名、页数、格式。','方案对比：付费点集中在去水印、页数上限、高级模板、字体上传、分享与团队。'],
+  inter:['作品「打开」回到工作台并恢复内容与参数；「打印」直接进打印预览。','「登录后云同步」打开微信扫码登录对话框。'],
+  edge:['游客数据只在本机浏览器，登录后合并。','孩子姓名只用于渲染，不上传。','作品分享与作品广场在 V2。'],
+  prd:'3.3.5 作品 · 3.4 账户 · 3.5 商业化'},
+ flow:{title:'流程总览',goal:'一屏看清核心链路与各页面的进出关系，用于评审和开发排期。',
+  notes:['蓝底四格是核心链路，其余是入口、分支与进阶。点任一格跳到对应页面。'],
+  inter:['点方块跳转。'],
+  edge:['这一页属于原型说明层，正式产品里不会出现。','页面一览表中的 PRD 编号对应 docs/01-产品需求文档-PRD.md。'],
+  prd:'2.3 核心链路 · 7 路线图'},
+};
+/* ===================== 排版引擎（毫米制 SVG） ===================== */
+const PAPERS={A4:[210,297],A5:[148,210],B5:[176,250],A3:[297,420]};
+const FONTS={wenkai:"'LXGW WenKai TC','KaiTi','STKaiti','Noto Serif SC',serif",mashan:"'Ma Shan Zheng','KaiTi','STKaiti','Noto Serif SC',serif",kaiti:"'KaiTi','STKaiti','楷体','Noto Serif SC',serif",serif:"'Noto Serif SC','Songti SC','SimSun',serif"};
+const FONT_NAMES={wenkai:'霞鹜文楷',mashan:'马善政楷书',kaiti:'系统楷体',serif:'思源宋体'};
+const PYFONT="'Noto Sans SC',sans-serif";
+const INK='#1F1D1A';
+const DEFAULT_P={paper:'A4',orient:'portrait',margin:8,grid:'tian',cell:16,gap:2,linecolor:'#5B9C7A',pinyin:false,pyScope:'all',dir:'h',trace:'gray',font:'wenkai',mode:'practice',example:1,traceN:2,punct:'hide',seg:'phrase',phraseGap:6,bg:'none',bgPlace:'bands',bgOpacity:0.16,titleSize:0,cardAuto:true,title:true,sign:true,name:'',watermark:true,ruler:true};
+const GRID_NAMES={tian:'田字格',mi:'米字格',hui:'回宫格',jiu:'九宫格',fang:'方格',blank:'无格线',vertical:'竖排界栏'};
+const MODE_NAMES={practice:'描红练习',flow:'整篇描红',card:'诗词卡片',blank:'空白纸'};
+let LAST={cols:0,rows:0};
+/* 装饰字字号规则：标题按模式与格子派生，可手动覆盖 */
+function titleSizeFor(p,s){if(+p.titleSize>0)return +p.titleSize;return p.mode==='card'?Math.min(18,Math.max(8,(s||p.cell)*0.85)):6.5;}
+
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function f(n){return Math.round(n*100)/100}
+function pageSize(p){let [w,h]=PAPERS[p.paper]||PAPERS.A4;if(p.orient==='landscape')[w,h]=[h,w];return [w,h]}
+const PUNCT=/[，。、？！：；“”‘’（）《》,.?!:;"'()\s]/;
+
+function flatten(work,sel){
+  const out=[];
+  work.lines.forEach((ln,li)=>{
+    if(sel&&sel.mode==='lines'&&!sel.lines.has(li))return;
+    const chars=[...ln[0]];const syl=(ln[1]||'').split(/\s+/).filter(Boolean);let k=0;
+    chars.forEach((ch,ci)=>{
+      const punct=PUNCT.test(ch);
+      const py=punct?'':(syl[k++]||'');
+      if(sel&&sel.mode==='chars'&&(punct||!sel.chars.has(li+':'+ci)))return;
+      out.push({ch,py,punct,li,ci,multi:!punct&&(PY[ch]||[]).length>1});
+    });
+  });
+  return out;
+}
+
+/* 整篇描红：按短语分组排版。返回行数组，每行 {groups:[{chars,x}],width}，x 为该字组在行内的毫米偏移 */
+function flowLayout(chars,p,lineLen,s,g){
+  const seg=p.seg||'phrase';const pgap=seg==='none'?0:Math.max(g,+p.phraseGap||0);const tailMode=p.punct==='tail'||p.punct==='cell';
+  const runW=n=>n*(s+g)-g;const lines=[];let cur=null;const newLine=()=>{cur={groups:[],width:0};lines.push(cur)};
+  const addTail=(arr,ch)=>{if(!arr.length)return;const l=arr[arr.length-1];arr[arr.length-1]=Object.assign({},l,{tail:(l.tail||'')+ch})};
+  if(seg==='none'){
+    const seq=[];chars.forEach(c=>{if(c.punct){if(tailMode)addTail(seq,c.ch);return;}seq.push(c)});
+    const fit=Math.max(1,Math.floor((lineLen+g)/(s+g)));
+    for(let i=0;i<seq.length;i+=fit){newLine();const ch=seq.slice(i,i+fit);cur.groups.push({chars:ch,x:0});cur.width=runW(ch.length);}
+    return lines;
+  }
+  const phrases=[];let ph=null;
+  chars.forEach(c=>{
+    if(c.punct){if(ph){if(tailMode)addTail(ph.chars,c.ch);ph.hasPunct=true;ph.end=/[。？！；]/.test(c.ch);phrases.push(ph);ph=null;}return;}
+    if(ph&&ph.li!==c.li){ph.end=true;phrases.push(ph);ph=null;}
+    if(!ph)ph={chars:[],li:c.li,end:false};
+    ph.chars.push(c);
+  });
+  if(ph){ph.end=true;phrases.push(ph);}
+  phrases.forEach((q,i)=>{const n=phrases[i+1];if(!n||(n.li!==q.li&&!q.hasPunct))q.end=true;});
+  newLine();
+  phrases.forEach(q=>{
+    let rest=q.chars;
+    while(rest.length){
+      const needGap=cur.groups.length?pgap:0;const avail=lineLen-cur.width-needGap;
+      let n=Math.floor((avail+g)/(s+g));
+      if(n<rest.length){if(cur.groups.length){newLine();continue;}n=Math.max(1,Math.min(n,rest.length));}
+      else n=rest.length;
+      const take=rest.slice(0,n);rest=rest.slice(n);
+      const x=cur.width+needGap;cur.groups.push({chars:take,x});cur.width=x+runW(take.length);
+      if(rest.length)newLine();
+    }
+    if(seg==='sentence'&&q.end)newLine();
+  });
+  while(lines.length&&lines[lines.length-1].groups.length===0)lines.pop();
+  return lines;
+}
+function cellSvg(x,y,s,type,col,lw){
+  if(type==='blank')return '';
+  const d=`stroke="${col}" stroke-width="${lw}" fill="none"`;
+  const dash=`stroke-dasharray="${f(s*0.06)} ${f(s*0.05)}"`;
+  let o=`<rect x="${f(x)}" y="${f(y)}" width="${f(s)}" height="${f(s)}" ${d}/>`;
+  if(type==='tian'||type==='mi'){o+=`<line x1="${f(x)}" y1="${f(y+s/2)}" x2="${f(x+s)}" y2="${f(y+s/2)}" ${d} ${dash}/><line x1="${f(x+s/2)}" y1="${f(y)}" x2="${f(x+s/2)}" y2="${f(y+s)}" ${d} ${dash}/>`;}
+  if(type==='mi'){o+=`<line x1="${f(x)}" y1="${f(y)}" x2="${f(x+s)}" y2="${f(y+s)}" ${d} ${dash}/><line x1="${f(x+s)}" y1="${f(y)}" x2="${f(x)}" y2="${f(y+s)}" ${d} ${dash}/>`;}
+  if(type==='jiu'){for(let i=1;i<3;i++){const t=s*i/3;o+=`<line x1="${f(x)}" y1="${f(y+t)}" x2="${f(x+s)}" y2="${f(y+t)}" ${d} ${dash}/><line x1="${f(x+t)}" y1="${f(y)}" x2="${f(x+t)}" y2="${f(y+s)}" ${d} ${dash}/>`;}}
+  if(type==='hui'){const i=s*0.22;o+=`<rect x="${f(x+i)}" y="${f(y+i)}" width="${f(s-2*i)}" height="${f(s-2*i)}" ${d} ${dash}/>`;}
+  return o;
+}
+function pyGrid(x,y,w,h,col,lw){
+  let o='';for(let i=0;i<4;i++){const yy=y+h*i/3;const mid=(i===1||i===2);o+=`<line x1="${f(x)}" y1="${f(yy)}" x2="${f(x+w)}" y2="${f(yy)}" stroke="${col}" stroke-width="${mid?lw:lw*0.7}" fill="none" ${mid?'':'stroke-dasharray="0.8 0.6"'}/>`;}
+  return o;
+}
+function textAttrs(style){
+  switch(style){
+    case 'gray':return 'fill="#ABABAB"';
+    case 'outline':return 'fill="none" stroke="#7A7A7A" stroke-width="0.18"';
+    case 'dotted':return 'fill="none" stroke="#7A7A7A" stroke-width="0.22" stroke-dasharray="0.45 0.35"';
+    case 'red':return 'fill="#C0392B" fill-opacity="0.42"';
+    case 'punct':return 'fill="#8A8A8A"';
+    default:return `fill="${INK}"`;
+  }
+}
+function charSvg(ch,x,y,s,style,ff){
+  const size=style==='punct'?s*0.5:s*0.76;
+  return `<text x="${f(x+s/2)}" y="${f(y+s/2)}" font-size="${f(size)}" font-family="${ff}" text-anchor="middle" dominant-baseline="central" ${textAttrs(style)}>${esc(ch)}</text>`;
+}
+function tailSvg(t,x,y,s){return `<text x="${f(x+s*0.84)}" y="${f(y+s*0.86)}" font-size="${f(s*0.34)}" font-family="${FONTS.serif}" text-anchor="middle" fill="#8A8A8A">${esc(t)}</text>`}
+function pySvg(py,x,y,w,h){
+  if(!py)return '';
+  return `<text x="${f(x+w/2)}" y="${f(y+h*0.72)}" font-size="${f(h*0.58)}" font-family="${PYFONT}" text-anchor="middle" fill="#3A3A3A">${esc(py)}</text>`;
+}
+function pySvgV(py,x,y,w,s){
+  if(!py)return '';
+  return `<text transform="translate(${f(x+w*0.6)} ${f(y+s/2)}) rotate(90)" font-size="${f(w*0.6)}" font-family="${PYFONT}" text-anchor="middle" dominant-baseline="central" fill="#3A3A3A">${esc(py)}</text>`;
+}
+function svgOpen(W,H,p){return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}mm" height="${H}mm" role="img" aria-label="纸张预览"><rect width="${W}" height="${H}" fill="#FFFFFF"/>`+(p?bgSvg(p,W,H):'')}
+/* ---------- 画底：程序生成的古画风底纹，正式版替换为公版名画扫描 ---------- */
+let BG_ID=0;let BAND={top:null,bottom:null};
+const BG_NAMES={none:'无',xuan:'宣纸纹理',yunwen:'如意云纹',qianli:'千里江山图',fuchun:'富春山居图',xishan:'溪山行旅图',zaochun:'早春图',qinglv:'青绿山水（示意）',shuimo:'水墨山水（示意）'};
+const BG_IMG={qianli:{src:'bg/qianli.jpg',w:1920,h:402,by:'王希孟 · 北宋 · 故宫博物院藏'},fuchun:{src:'bg/fuchun.jpg',w:1920,h:702,by:'黄公望 · 元 · 台北故宫博物院藏'},xishan:{src:'bg/xishan.jpg',w:1920,h:3850,by:'范宽 · 北宋 · 台北故宫博物院藏'},zaochun:{src:'bg/zaochun.jpg',w:1920,h:2792,by:'郭熙 · 北宋 · 台北故宫博物院藏'}};
+function rng(seed){let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296}}
+function ridge(W,H,y0,amp,seg,r){
+  const pts=[];for(let i=0;i<=seg;i++){const x=-5+(W+10)*i/seg;const y=y0-amp*(0.25+0.75*r())*(i%2?1:0.5);pts.push([x,y]);}
+  let d=`M-5 ${f(pts[0][1])}`;for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];d+=` Q${f((a[0]+b[0])/2)} ${f(Math.min(a[1],b[1])-amp*0.12)} ${f(b[0])} ${f(b[1])}`;}
+  return d+` L${W+5} ${H+5} L-5 ${H+5} Z`;
+}
+function bgSvg(p,W,H){
+  const kind=p.bg||'none';if(kind==='none'||!BG_NAMES[kind])return '';
+  const op=Math.max(0.03,Math.min(0.8,+p.bgOpacity||0.16));const place=p.bgPlace||'bands';const id='bg'+(++BG_ID);
+  const m=Math.max(p.margin||8,8);const dflt=Math.max(18,H*0.16);const tb=BAND.top?Math.max(8,BAND.top-1.5):dflt;const bb=BAND.bottom?Math.max(8,H-BAND.bottom-1.5):dflt;const bh=dflt;
+  let defs='',body='';
+  if(place==='bands')defs+=`<clipPath id="${id}c"><rect x="0" y="0" width="${W}" height="${f(tb)}"/><rect x="0" y="${f(H-bb)}" width="${W}" height="${f(bb)}"/></clipPath>`;
+  else if(place==='frame'){const i=m-2;defs+=`<clipPath id="${id}c"><path d="M0 0 H${W} V${H} H0 Z M${f(i)} ${f(i)} V${f(H-i)} H${f(W-i)} V${f(i)} Z" clip-rule="evenodd"/></clipPath>`;}
+  if(BG_IMG[kind]){
+    const im=BG_IMG[kind];const wide=im.w/im.h>1.5;
+    if(place==='bands'){body=`<image href="${im.src}" x="0" y="0" width="${W}" height="${f(tb)}" preserveAspectRatio="xMidYMid slice"/><image href="${im.src}" x="0" y="${f(H-bb)}" width="${W}" height="${f(bb)}" preserveAspectRatio="xMidYMid slice"/>`;}
+    else if(place==='full'&&wide){const ih=W*im.h/im.w;const y=H-ih-H*0.06;defs+=`<linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="1"/><stop offset="0.35" stop-color="#fff" stop-opacity="0"/></linearGradient>`;body=`<image href="${im.src}" x="0" y="${f(y)}" width="${W}" height="${f(ih)}" preserveAspectRatio="xMidYMid slice"/><rect x="0" y="${f(y)}" width="${W}" height="${f(ih)}" fill="url(#${id}g)"/>`;}
+    else{body=`<image href="${im.src}" x="0" y="0" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`;}
+  }else if(kind==='xuan'){
+    defs+=`<filter id="${id}f" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" seed="7"/><feColorMatrix type="matrix" values="0 0 0 0 0.5  0 0 0 0 0.4  0 0 0 0 0.24  0 0 0 0.9 0"/></filter>`;
+    body=`<rect width="${W}" height="${H}" fill="#E7DCC4" opacity="0.6"/><rect width="${W}" height="${H}" filter="url(#${id}f)"/>`;
+  }else if(kind==='qinglv'||kind==='shuimo'){
+    const cols=kind==='qinglv'?['#A3BFD6','#6C9AC0','#2F5F8D','#3F7F62','#27594A']:['#CFCFCF','#A6A6A6','#7A7A7A','#525252','#363636'];
+    const r=rng(kind==='qinglv'?11:23);
+    const band=(yTop,h,scale)=>{let o='';cols.forEach((c,i)=>{o+=`<path d="${ridge(W,H,yTop+h*(0.55+0.11*i),h*0.5*scale*(1-0.08*i),7+i*2,r)}" fill="${c}" opacity="${f(0.3+0.14*i)}"/>`});return o;};
+    if(place==='bands'){body=band(0,tb,0.9)+band(H-bb,bb,0.9);}
+    else{defs+=`<linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0.5" stop-color="#fff" stop-opacity="0"/><stop offset="0.66" stop-color="#fff" stop-opacity="0.6"/><stop offset="0.78" stop-color="#fff" stop-opacity="0"/></linearGradient>`;body=band(H*0.42,H*0.5,0.95)+`<rect width="${W}" height="${H}" fill="url(#${id}g)"/>`;}
+  }else if(kind==='yunwen'){
+    defs+=`<pattern id="${id}p" width="26" height="14" patternUnits="userSpaceOnUse"><path d="M2 10 a3 3 0 1 1 5 -2 a3.5 3.5 0 1 1 6 1 a3 3 0 1 1 4 3 H2 Z M15 4 a2 2 0 1 1 3.5 -1 a2.2 2.2 0 1 1 3.5 1.5 H15 Z" fill="none" stroke="#6B4F2A" stroke-width="0.35"/></pattern>`;
+    body=`<rect width="${W}" height="${H}" fill="url(#${id}p)"/>`;
+  }
+  return `<defs>${defs}</defs><g opacity="${f(op)}"${place!=='full'?` clip-path="url(#${id}c)"`:''}>${body}</g>`;
+}
+
+function chrome(p,W,H,meta,pageNo,pageTotal,opts){
+  opts=opts||{};const m=p.margin,mb=Math.max(m,p.ruler?8:4),mx=Math.max(m,5),ry=H-Math.max(5,Math.min(mb/2,8));let o='';const ff=FONTS[p.font]||FONTS.wenkai;
+  if(p.title&&!opts.noTitle&&meta&&meta.title){const T=titleSizeFor(p,p.cell);
+    o+=`<text x="${mx}" y="${f(m+T*0.95)}" font-size="${f(T)}" font-family="${ff}" fill="${INK}">${esc(meta.title)}</text>`;
+    if(meta.author)o+=`<text x="${W-mx}" y="${f(m+T*0.92)}" font-size="${f(Math.max(3.2,T*0.45))}" font-family="${FONTS.serif}" text-anchor="end" fill="#555">${esc(meta.author)}</text>`;
+    o+=`<line x1="${mx}" y1="${f(m+T*1.46)}" x2="${W-mx}" y2="${f(m+T*1.46)}" stroke="#999" stroke-width="0.2"/>`;
+  }
+  if(p.sign){const y=H-mb-1.2;
+    o+=`<text x="${mx}" y="${f(y)}" font-size="3.6" font-family="${FONTS.serif}" fill="#555">姓名</text><line x1="${mx+8}" y1="${f(y+0.8)}" x2="${mx+38}" y2="${f(y+0.8)}" stroke="#999" stroke-width="0.2"/>`;
+    if(p.name)o+=`<text x="${mx+10}" y="${f(y)}" font-size="4.2" font-family="${ff}" fill="${INK}">${esc(p.name)}</text>`;
+    o+=`<text x="${mx+44}" y="${f(y)}" font-size="3.6" font-family="${FONTS.serif}" fill="#555">日期</text><line x1="${mx+52}" y1="${f(y+0.8)}" x2="${mx+82}" y2="${f(y+0.8)}" stroke="#999" stroke-width="0.2"/>`;
+  }
+  if(pageTotal&&(pageTotal>1||opts.forceNum)){o+=`<text x="${W/2}" y="${f(ry+1.1)}" font-size="3.2" font-family="${PYFONT}" text-anchor="middle" fill="#777">${pageNo} / ${pageTotal}</text>`;}
+  if(p.ruler){const rx=W-mx-10;
+    o+=`<line x1="${rx}" y1="${f(ry)}" x2="${rx+10}" y2="${f(ry)}" stroke="${INK}" stroke-width="0.25"/>`;
+    for(let i=0;i<=10;i++){const t=(i%5===0)?1.8:1;o+=`<line x1="${rx+i}" y1="${f(ry)}" x2="${rx+i}" y2="${f(ry-t)}" stroke="${INK}" stroke-width="0.2"/>`;}
+    o+=`<text x="${rx-1.5}" y="${f(ry+0.8)}" font-size="2.2" font-family="${PYFONT}" text-anchor="end" fill="#555">1 cm 校准尺</text>`;
+  }
+  if(p.watermark){o+=`<text x="${W/2}" y="${H/2}" transform="rotate(-30 ${W/2} ${H/2})" font-size="13" font-family="${ff}" text-anchor="middle" fill="#000" fill-opacity="0.05">开蒙纸坊 · 游客预览</text>`;}
+  return o;
+}
+
+function buildPages(p,chars,meta,opts){
+  opts=opts||{};
+  const [W,H]=pageSize(p);const m=p.margin;BAND={top:null,bottom:null};
+  if(p.mode==='card')return cardPage(p,chars,meta,W,H,opts);
+  const classic=p.grid==='vertical';
+  const T=titleSizeFor(p,p.cell);LAST.titleSize=T;
+  const top=m+((p.title&&meta&&meta.title&&!classic)?T*1.85:(classic?2:0));
+  const bottom=H-Math.max(m,p.ruler?8:4)-(p.sign?8:0);
+  const left=m,right=W-m;BAND={top,bottom};
+  const ff=FONTS[p.font]||FONTS.wenkai;
+  const items=p.mode==='blank'?[]:chars.filter(c=>!c.punct);
+  if(p.mode==='flow')return (p.dir==='v'||classic)?verticalFlow(p,chars,meta,W,H,top,bottom,left,right,ff,classic,opts):horizontalFlow(p,chars,meta,W,H,top,bottom,left,right,ff,opts);
+  if(p.dir==='v'||classic)return verticalPages(p,items,chars,meta,W,H,top,bottom,left,right,ff,classic,opts);
+  const s=p.cell,g=p.gap,col=p.linecolor,lw=0.25;
+  const ph=p.pinyin?s*0.42:0;const rowH=ph+s+g;
+  const cols=Math.max(1,Math.floor((right-left+g)/(s+g)));
+  const rows=Math.max(1,Math.floor((bottom-top+g)/rowH));
+  const blockW=cols*(s+g)-g,blockH=rows*rowH-g;
+  const ox=left+(right-left-blockW)/2,oy=top+(bottom-top-blockH)/2;
+  Object.assign(LAST,{cols,rows});
+  const slots=p.mode==='practice'?rows:rows*cols;
+  const total=p.mode==='blank'?1:Math.max(1,Math.ceil(items.length/slots));
+  const pages=[];
+  for(let pg=0;pg<total;pg++){
+    let o=svgOpen(W,H,p);const slice=items.slice(pg*slots,(pg+1)*slots);
+    for(let r=0;r<rows;r++){const y=oy+r*rowH;
+      for(let c=0;c<cols;c++){const x=ox+c*(s+g);
+        if(p.pinyin)o+=pyGrid(x,y,s,ph,col,lw*0.8);
+        o+=cellSvg(x,y+ph,s,p.grid,col,lw);
+        let item=null,style='ink';
+        if(p.mode==='practice'){item=slice[r]||null;if(item){if(c<p.example)style='ink';else if(c<p.example+p.traceN)style=p.trace;else item=null;}}
+        if(item){o+=charSvg(item.ch,x,y+ph,s,style,ff);if(item.tail)o+=tailSvg(item.tail,x,y+ph,s);if(p.pinyin&&item.py&&(p.pyScope!=='multi'||item.multi))o+=pySvg(item.py,x,y,s,ph);}
+      }}
+    o+=chrome(p,W,H,meta,(opts.offset||0)+pg+1,opts.total||total,{forceNum:!!opts.total})+'</svg>';pages.push(o);
+  }
+  return pages;
+}
+
+function verticalPages(p,items,chars,meta,W,H,top,bottom,left,right,ff,classic,opts){
+  const s=p.cell,col=p.linecolor,lw=0.25;
+  const g=classic?0:p.gap;const pw=(p.pinyin&&!classic)?s*0.42:0;
+  const colW=classic?s*1.12:s+pw+g;
+  let cols=Math.max(1,Math.floor((right-left+g)/colW));
+  const rows=Math.max(1,Math.floor((bottom-top+g)/(s+g)));
+  const mid=(classic&&cols>=5)?Math.floor(cols/2):-1;
+  const usable=cols-(mid>=0?1:0);
+  Object.assign(LAST,{cols:usable,rows});
+  const slots=p.mode==='practice'?usable:usable*rows;
+  const total=p.mode==='blank'?1:Math.max(1,Math.ceil(items.length/slots));
+  const pages=[];
+  const blockW=classic?cols*colW:cols*colW-g;const blockH=classic?rows*s:rows*(s+g)-g;
+  const ox=left+(right-left-blockW)/2,oy=top+(bottom-top-blockH)/2;const R=ox+blockW;const frameL=ox;
+  for(let pg=0;pg<total;pg++){
+    let o=svgOpen(W,H,p);const slice=items.slice(pg*slots,(pg+1)*slots);
+    if(classic){
+      const fh=rows*s;
+      o+=`<rect x="${f(frameL-1.6)}" y="${f(oy-1.6)}" width="${f(cols*colW+3.2)}" height="${f(fh+3.2)}" fill="none" stroke="${col}" stroke-width="0.55"/>`;
+      o+=`<rect x="${f(frameL)}" y="${f(oy)}" width="${f(cols*colW)}" height="${f(fh)}" fill="none" stroke="${col}" stroke-width="0.22"/>`;
+      for(let c=1;c<cols;c++){const x=R-c*colW;o+=`<line x1="${f(x)}" y1="${f(oy)}" x2="${f(x)}" y2="${f(oy+fh)}" stroke="${col}" stroke-width="0.22"/>`;}
+      if(mid>=0){const x=R-(mid+1)*colW;const yw=oy+fh*0.22;const w=colW;
+        o+=`<path d="M${f(x)} ${f(yw)} h${f(w)} v${f(s*0.5)} l${f(-w/2)} ${f(-s*0.22)} l${f(-w/2)} ${f(s*0.22)} z" fill="${col}"/>`;
+        o+=`<line x1="${f(x)}" y1="${f(oy+fh*0.78)}" x2="${f(x+w)}" y2="${f(oy+fh*0.78)}" stroke="${col}" stroke-width="0.22"/>`;
+        if(meta&&meta.title)o+=`<text x="${f(x+w/2)}" y="${f(oy+3)}" font-size="${f(s*0.42)}" font-family="${ff}" fill="${INK}" text-anchor="start" style="writing-mode:vertical-rl;text-orientation:upright" dominant-baseline="central">${esc(meta.title)}</text>`;
+        o+=`<text x="${f(x+w/2)}" y="${f(oy+fh*0.8)}" font-size="${f(s*0.34)}" font-family="${FONTS.serif}" fill="#555" text-anchor="start" style="writing-mode:vertical-rl;text-orientation:upright" dominant-baseline="central">${(opts.offset||0)+pg+1}</text>`;
+      }
+    }
+    let k=0;
+    for(let c=0;c<cols;c++){
+      if(c===mid)continue;
+      const x=R-(c+1)*colW+(classic?0:g);
+      for(let r=0;r<rows;r++){const y=oy+r*(s+g);
+        const cx=classic?x+(colW-s)/2:x;
+        if(!classic){o+=cellSvg(cx,y,s,p.grid,col,lw);if(pw)o+=`<rect x="${f(cx+s)}" y="${f(y)}" width="${f(pw)}" height="${f(s)}" fill="none" stroke="${col}" stroke-width="${lw*0.6}" stroke-dasharray="0.8 0.6"/>`;}
+        else if(r>0){o+=`<line x1="${f(x+colW*0.42)}" y1="${f(y)}" x2="${f(x+colW*0.58)}" y2="${f(y)}" stroke="${col}" stroke-width="0.15"/>`;}
+        let item=null,style='ink';
+        if(p.mode==='practice'){item=slice[k]||null;if(item){if(r<p.example)style='ink';else if(r<p.example+p.traceN)style=p.trace;else item=null;}}
+        if(item){o+=charSvg(item.ch,cx,y,s,style,ff);if(item.tail)o+=tailSvg(item.tail,cx,y,s);if(pw&&item.py&&(p.pyScope!=='multi'||item.multi))o+=pySvgV(item.py,cx+s,y,pw,s);}
+      }
+      k++;
+    }
+    o+=chrome(p,W,H,meta,(opts.offset||0)+pg+1,opts.total||total,{noTitle:classic,forceNum:!!opts.total})+'</svg>';pages.push(o);
+  }
+  return pages;
+}
+
+function horizontalFlow(p,chars,meta,W,H,top,bottom,left,right,ff,opts){
+  const s=p.cell,g=p.gap,col=p.linecolor,lw=0.25;const ph=p.pinyin?s*0.42:0;const rowH=ph+s+g;const seg=p.seg||'phrase';
+  const rows=Math.max(1,Math.floor((bottom-top+g)/rowH));const cols=Math.max(1,Math.floor((right-left+g)/(s+g)));
+  const lines=flowLayout(chars,p,right-left,s,g);
+  const uniformW=cols*(s+g)-g;const maxW=Math.max(s,...lines.map(l=>l.width));const bw=seg==='none'?uniformW:maxW;
+  Object.assign(LAST,{cols,rows});
+  const total=Math.max(1,Math.ceil(lines.length/rows));
+  const ox=left+(right-left-bw)/2,oy=top+(bottom-top-(rows*rowH-g))/2;
+  const cell=(item,x,y)=>{let o='';if(p.pinyin)o+=pyGrid(x,y,s,ph,col,lw*0.8);o+=cellSvg(x,y+ph,s,p.grid,col,lw);if(item){o+=charSvg(item.ch,x,y+ph,s,p.trace,ff);if(item.tail)o+=tailSvg(item.tail,x,y+ph,s);if(p.pinyin&&item.py&&(p.pyScope!=='multi'||item.multi))o+=pySvg(item.py,x,y,s,ph);}return o;};
+  const pages=[];
+  for(let pg=0;pg<total;pg++){let o=svgOpen(W,H,p);const pl=lines.slice(pg*rows,(pg+1)*rows);
+    for(let r=0;r<rows;r++){const y=oy+r*rowH;const line=pl[r];
+      if(!line){if(seg==='none')for(let c=0;c<cols;c++)o+=cell(null,ox+c*(s+g),y);continue;}
+      line.groups.forEach(gr=>gr.chars.forEach((item,k)=>{o+=cell(item,ox+gr.x+k*(s+g),y)}));
+    }
+    o+=chrome(p,W,H,meta,(opts.offset||0)+pg+1,opts.total||total,{forceNum:!!opts.total})+'</svg>';pages.push(o);}
+  return pages;
+}
+function verticalFlow(p,chars,meta,W,H,top,bottom,left,right,ff,classic,opts){
+  const s=p.cell,col=p.linecolor,lw=0.25;const g=classic?0:p.gap;const pw=(p.pinyin&&!classic)?s*0.42:0;const colW=classic?s*1.12:s+pw+g;const seg=p.seg||'phrase';
+  const cols=Math.max(1,Math.floor((right-left+g)/colW));const rows=Math.max(1,Math.floor((bottom-top+g)/(s+g)));
+  const mid=(classic&&cols>=5)?Math.floor(cols/2):-1;const usable=cols-(mid>=0?1:0);
+  const uniformH=rows*(s+g)-g;const lines=flowLayout(chars,p,uniformH,s,g);
+  const maxH=Math.max(s,...lines.map(l=>l.width));const bh=(seg==='none'||classic)?uniformH:maxH;
+  Object.assign(LAST,{cols:usable,rows});
+  const total=Math.max(1,Math.ceil(lines.length/usable));
+  const blockW=classic?cols*colW:cols*colW-g;const ox=left+(right-left-blockW)/2,oy=top+(bottom-top-bh)/2;const R=ox+blockW;const frameL=ox;
+  const pages=[];
+  for(let pg=0;pg<total;pg++){
+    let o=svgOpen(W,H,p);const pl=lines.slice(pg*usable,(pg+1)*usable);
+    if(classic){const fh=rows*s;
+      o+=`<rect x="${f(frameL-1.6)}" y="${f(oy-1.6)}" width="${f(cols*colW+3.2)}" height="${f(fh+3.2)}" fill="none" stroke="${col}" stroke-width="0.55"/>`;
+      o+=`<rect x="${f(frameL)}" y="${f(oy)}" width="${f(cols*colW)}" height="${f(fh)}" fill="none" stroke="${col}" stroke-width="0.22"/>`;
+      for(let c=1;c<cols;c++){const x=R-c*colW;o+=`<line x1="${f(x)}" y1="${f(oy)}" x2="${f(x)}" y2="${f(oy+fh)}" stroke="${col}" stroke-width="0.22"/>`;}
+      if(mid>=0){const x=R-(mid+1)*colW;const yw=oy+fh*0.22;const w=colW;
+        o+=`<path d="M${f(x)} ${f(yw)} h${f(w)} v${f(s*0.5)} l${f(-w/2)} ${f(-s*0.22)} l${f(-w/2)} ${f(s*0.22)} z" fill="${col}"/>`;
+        o+=`<line x1="${f(x)}" y1="${f(oy+fh*0.78)}" x2="${f(x+w)}" y2="${f(oy+fh*0.78)}" stroke="${col}" stroke-width="0.22"/>`;
+        if(meta&&meta.title)o+=`<text x="${f(x+w/2)}" y="${f(oy+3)}" font-size="${f(s*0.42)}" font-family="${ff}" fill="${INK}" text-anchor="start" style="writing-mode:vertical-rl;text-orientation:upright" dominant-baseline="central">${esc(meta.title)}</text>`;
+        o+=`<text x="${f(x+w/2)}" y="${f(oy+fh*0.8)}" font-size="${f(s*0.34)}" font-family="${FONTS.serif}" fill="#555" text-anchor="start" style="writing-mode:vertical-rl;text-orientation:upright" dominant-baseline="central">${(opts.offset||0)+pg+1}</text>`;
+      }
+    }
+    let k=0;
+    for(let c=0;c<cols;c++){
+      if(c===mid)continue;
+      const x=R-(c+1)*colW+(classic?0:g);const cx=classic?x+(colW-s)/2:x;const line=pl[k];k++;
+      if(classic)for(let r=1;r<rows;r++){const y=oy+r*s;o+=`<line x1="${f(x+colW*0.42)}" y1="${f(y)}" x2="${f(x+colW*0.58)}" y2="${f(y)}" stroke="${col}" stroke-width="0.15"/>`;}
+      const cell=(item,y)=>{let q='';if(!classic){q+=cellSvg(cx,y,s,p.grid,col,lw);if(pw)q+=`<rect x="${f(cx+s)}" y="${f(y)}" width="${f(pw)}" height="${f(s)}" fill="none" stroke="${col}" stroke-width="${lw*0.6}" stroke-dasharray="0.8 0.6"/>`;}
+        if(item){q+=charSvg(item.ch,cx,y,s,p.trace,ff);if(item.tail)q+=tailSvg(item.tail,cx,y,s);if(pw&&item.py&&(p.pyScope!=='multi'||item.multi))q+=pySvgV(item.py,cx+s,y,pw,s);}return q;};
+      if(!line){if(!classic&&seg==='none')for(let r=0;r<rows;r++)o+=cell(null,oy+r*(s+g));continue;}
+      line.groups.forEach(gr=>gr.chars.forEach((item,j)=>{o+=cell(item,oy+gr.x+j*(s+g))}));
+    }
+    o+=chrome(p,W,H,meta,(opts.offset||0)+pg+1,opts.total||total,{noTitle:classic,forceNum:!!opts.total})+'</svg>';pages.push(o);
+  }
+  return pages;
+}
+function cardPage(p,chars,meta,W,H,opts){
+  opts=opts||{};
+  const m=Math.max(p.margin,6);const ff=FONTS[p.font]||FONTS.mashan;const g=Math.max(0,+p.gap||0);const col=p.linecolor||'#C9463A',lw=0.25;
+  const gridType=p.grid==='vertical'?'blank':(p.grid||'blank');
+  const L=[];chars.forEach(c=>{(L[c.li]=L[c.li]||[]).push(c)});const lines=L.filter(Boolean);
+  const nmax=Math.max(1,...lines.map(l=>l.filter(c=>!c.punct).length));
+  const availW=W-2*m-10;const hasTitle=!!(meta&&meta.title&&p.title);
+  const T=s=>titleSizeFor(p,s);const headH=s=>hasTitle?T(s)*2.3:2;const footH=10+(p.sign?8:0);
+  const availH=s=>H-2*m-4-headH(s)-footH;const ph=s=>p.pinyin?s*0.42:0;const rowH=s=>ph(s)+s+g;
+  const build=s=>{const cap=Math.max(1,Math.floor((availW+g)/(s+g)));const rows=[];lines.forEach(l=>{let row=[];l.forEach(c=>{if(c.punct){if(p.punct==='tail'&&row.length){const k=row.length-1;row[k]=Object.assign({},row[k],{tail:(row[k].tail||'')+c.ch});}return;}if(row.length>=cap){rows.push(row);row=[];}row.push(c);});if(row.length)rows.push(row);});return rows;};
+  const auto=p.cardAuto!==false;
+  let s=auto?Math.min(30,(availW+g)/nmax-g):Math.max(4,+p.cell||13);
+  let rows=build(s);
+  if(auto){for(let k=0;k<8;k++){const need=rows.length*rowH(s)-g;if(need<=availH(s))break;s=Math.max(5,s*Math.max(0.6,availH(s)/need)*0.985);rows=build(s);}s=Math.floor(s*10)/10;rows=build(s);}
+  LAST.cardSize=s;LAST.titleSize=T(s);LAST.cols=Math.max(1,Math.floor((availW+g)/(s+g)));
+  const perPage=Math.max(1,Math.floor((availH(s)+g)/rowH(s)));LAST.rows=perPage;
+  const total=Math.max(1,Math.ceil(rows.length/perPage));
+  const pages=[];
+  for(let pg=0;pg<total;pg++){
+    let o=svgOpen(W,H,p);
+    o+=`<rect x="${m-4}" y="${m-4}" width="${W-2*m+8}" height="${H-2*m+8}" fill="none" stroke="#8B3A2E" stroke-width="0.6"/><rect x="${m-2}" y="${m-2}" width="${W-2*m+4}" height="${H-2*m+4}" fill="none" stroke="#8B3A2E" stroke-width="0.2"/>`;
+    const pr=rows.slice(pg*perPage,(pg+1)*perPage);
+    const top=m+2;const contentTop=top+headH(s);const areaH=H-m-2-footH-contentTop;
+    const blockH=pr.length*rowH(s)-g;let y=contentTop+Math.max(0,(areaH-blockH)/2);
+    if(hasTitle){const ts=T(s);o+=`<text x="${W/2}" y="${f(top+ts*0.95)}" font-size="${f(ts)}" font-family="${ff}" text-anchor="middle" fill="${INK}" letter-spacing="${f(ts*0.15)}">${esc(meta.title)}</text>`;
+      if(meta.author)o+=`<text x="${W/2}" y="${f(top+ts*1.7)}" font-size="${f(Math.max(3.2,ts*0.4))}" font-family="${FONTS.serif}" text-anchor="middle" fill="#666">${esc(meta.author)}</text>`;}
+    const h=ph(s);
+    pr.forEach(row=>{const w=row.length*(s+g)-g;let x=(W-w)/2;row.forEach(c=>{if(p.pinyin&&gridType!=='blank')o+=pyGrid(x,y,s,h,col,lw*0.8);o+=cellSvg(x,y+h,s,gridType,col,lw);o+=charSvg(c.ch,x,y+h,s,'ink',ff);if(c.tail)o+=tailSvg(c.tail,x,y+h,s);if(p.pinyin&&c.py&&(p.pyScope!=='multi'||c.multi))o+=pySvg(c.py,x,y,s,h);x+=s+g;});y+=rowH(s);});
+    o+=`<rect x="${W-m-11}" y="${H-m-11}" width="8" height="8" fill="#B23A2E" rx="0.5"/><text x="${W-m-7}" y="${H-m-7}" font-size="5.2" font-family="${FONTS.serif}" text-anchor="middle" dominant-baseline="central" fill="#fff">蒙</text>`;
+    o+=chrome(Object.assign({},p,{title:false,ruler:false}),W,H,meta,(opts.offset||0)+pg+1,opts.total||total,{forceNum:!!opts.total})+'</svg>';pages.push(o);
+  }
+  return pages;
+}
+function coverPage(p,coll,count){
+  BAND={top:null,bottom:null};const [W,H]=pageSize(p);const m=Math.max(p.margin,8);const ff=FONTS[p.font]||FONTS.wenkai;let o=svgOpen(W,H,p);
+  o+=`<rect x="${m-4}" y="${m-4}" width="${W-2*m+8}" height="${H-2*m+8}" fill="none" stroke="${INK}" stroke-width="0.6"/><rect x="${m-2}" y="${m-2}" width="${W-2*m+4}" height="${H-2*m+4}" fill="none" stroke="${INK}" stroke-width="0.2"/>`;
+  o+=`<text x="${W/2}" y="${f(H*0.36)}" font-size="${W>200?15:11}" font-family="${ff}" text-anchor="middle" fill="${INK}" letter-spacing="2.5">${esc(coll.name)}</text>`;
+  o+=`<text x="${W/2}" y="${f(H*0.36+11)}" font-size="4.2" font-family="${FONTS.serif}" text-anchor="middle" fill="#666">开蒙纸坊 · 文选成册 · 共 ${count} 页</text>`;
+  const y=H*0.62;
+  o+=`<text x="${f(W/2-38)}" y="${f(y)}" font-size="4.2" font-family="${FONTS.serif}" fill="#555">姓名</text><line x1="${f(W/2-28)}" y1="${f(y+1)}" x2="${f(W/2+2)}" y2="${f(y+1)}" stroke="#999" stroke-width="0.25"/>`;
+  o+=`<text x="${f(W/2+8)}" y="${f(y)}" font-size="4.2" font-family="${FONTS.serif}" fill="#555">班级</text><line x1="${f(W/2+18)}" y1="${f(y+1)}" x2="${f(W/2+42)}" y2="${f(y+1)}" stroke="#999" stroke-width="0.25"/>`;
+  if(p.name)o+=`<text x="${f(W/2-26)}" y="${f(y)}" font-size="4.6" font-family="${ff}" fill="${INK}">${esc(p.name)}</text>`;
+  o+=`<rect x="${W-m-13}" y="${H-m-13}" width="9" height="9" fill="#B23A2E" rx="0.5"/><text x="${W-m-8.5}" y="${H-m-8.5}" font-size="5.6" font-family="${FONTS.serif}" text-anchor="middle" dominant-baseline="central" fill="#fff">蒙</text>`;
+  return o+'</svg>';
+}
+function tocPage(p,entries){
+  BAND={top:null,bottom:null};const [W,H]=pageSize(p);const m=Math.max(p.margin,8);const ff=FONTS[p.font]||FONTS.wenkai;let o=svgOpen(W,H,p);
+  o+=`<text x="${W/2}" y="${m+10}" font-size="8" font-family="${ff}" text-anchor="middle" fill="${INK}" letter-spacing="3">目录</text>`;
+  entries.forEach((e,i)=>{const y=m+26+i*9;
+    o+=`<text x="${m+4}" y="${f(y)}" font-size="4.4" font-family="${ff}" fill="${INK}">${esc(e.title)}</text>`;
+    if(e.author)o+=`<text x="${m+4+e.title.length*4.6}" y="${f(y)}" font-size="3.2" font-family="${FONTS.serif}" fill="#777">${esc(e.author)}</text>`;
+    o+=`<line x1="${m+4+e.title.length*4.6+(e.author?e.author.length*3.3+3:0)}" y1="${f(y-1)}" x2="${W-m-12}" y2="${f(y-1)}" stroke="#aaa" stroke-width="0.2" stroke-dasharray="0.4 1"/>`;
+    o+=`<text x="${W-m-4}" y="${f(y)}" font-size="4" font-family="${PYFONT}" text-anchor="end" fill="${INK}">${e.page}</text>`;});
+  return o+'</svg>';
+}
+function transPage(p,work,pageNo,total){
+  BAND={top:null,bottom:null};const [W,H]=pageSize(p);const m=Math.max(p.margin,8);const ff=FONTS[p.font]||FONTS.wenkai;let o=svgOpen(W,H,p);
+  o+=`<text x="${m}" y="${m+6.2}" font-size="6.5" font-family="${ff}" fill="${INK}">${esc(work.title)} · 译文与注释</text><line x1="${m}" y1="${m+9.5}" x2="${W-m}" y2="${W>0?m+9.5:0}" stroke="#999" stroke-width="0.2"/>`;
+  let y=m+22;const cpl=Math.floor((W-2*m)/4.6);
+  const wrap=(t)=>{const out=[];for(let i=0;i<t.length;i+=cpl)out.push(t.slice(i,i+cpl));return out;};
+  work.lines.forEach(l=>{o+=`<text x="${m}" y="${f(y)}" font-size="5.2" font-family="${ff}" fill="${INK}" letter-spacing="0.8">${esc(l[0])}</text>`;y+=7;o+=`<text x="${m}" y="${f(y)}" font-size="3.4" font-family="${PYFONT}" fill="#555">${esc(l[1])}</text>`;y+=9;});
+  y+=4;[['译文',work.trans],['注释',work.notes]].forEach(([h,t])=>{if(!t)return;o+=`<text x="${m}" y="${f(y)}" font-size="4.6" font-family="${ff}" fill="#8B3A2E">${h}</text>`;y+=7;wrap(t).forEach(line=>{o+=`<text x="${m}" y="${f(y)}" font-size="4.2" font-family="${FONTS.serif}" fill="#333">${esc(line)}</text>`;y+=6.5;});y+=4;});
+  o+=chrome(Object.assign({},p,{title:false,sign:false}),W,H,null,pageNo,total,{forceNum:true})+'</svg>';return o;
+}
+function testPage(p){
+  BAND={top:null,bottom:null};const [W,H]=pageSize(p);const m=Math.max(p.margin,8);let o=svgOpen(W,H,p);
+  o+=`<text x="${m}" y="${m+8}" font-size="7" font-family="${FONTS.wenkai}" fill="${INK}">打印测试页</text>`;
+  o+=`<text x="${m}" y="${m+16}" font-size="4" font-family="${FONTS.serif}" fill="#555">打印后用尺量：下面两条线各应为 10 厘米。如果不是，请在打印对话框把缩放改为 100%。</text>`;
+  const x0=m,y0=m+30;
+  o+=`<line x1="${x0}" y1="${y0}" x2="${x0+100}" y2="${y0}" stroke="${INK}" stroke-width="0.3"/><line x1="${x0}" y1="${y0}" x2="${x0}" y2="${y0+100}" stroke="${INK}" stroke-width="0.3"/>`;
+  for(let i=0;i<=100;i+=1){const t=i%10===0?4:(i%5===0?2.5:1.2);o+=`<line x1="${x0+i}" y1="${y0}" x2="${x0+i}" y2="${y0-t}" stroke="${INK}" stroke-width="0.2"/><line x1="${x0}" y1="${y0+i}" x2="${x0-t}" y2="${y0+i}" stroke="${INK}" stroke-width="0.2"/>`;}
+  for(let i=0;i<=10;i++){o+=`<text x="${x0+i*10}" y="${y0-5.5}" font-size="2.6" font-family="${PYFONT}" text-anchor="middle" fill="#555">${i}</text>`;}
+  o+=`<text x="${x0+50}" y="${y0+10}" font-size="3.6" font-family="${PYFONT}" text-anchor="middle" fill="#555">10 cm</text>`;
+  o+=cellSvg(x0+30,y0+30,16,'tian','#5B9C7A',0.25)+`<text x="${x0+38}" y="${y0+52}" font-size="3" font-family="${PYFONT}" text-anchor="middle" fill="#555">16 mm 田字格</text>`;
+  o+=`<rect x="${W-m-20}" y="${H-m-20}" width="20" height="20" fill="none" stroke="#999" stroke-width="0.2"/><text x="${W-m-10}" y="${H-m-8}" font-size="2.6" font-family="${PYFONT}" text-anchor="middle" fill="#777">边距角标</text>`;
+  return o+'</svg>';
+}
+/* ===================== 应用状态与交互 ===================== */
+const $=(s,r)=>(r||document).querySelector(s);const $$=(s,r)=>[...(r||document).querySelectorAll(s)];
+const byId=id=>document.getElementById(id);
+const workById=id=>WORKS.find(w=>w.id===id);
+const tplById=id=>TEMPLATES.find(t=>t.id===id)||app.saved.find(t=>t.id===id);
+const app={screen:'home',work:workById('jingyesi'),sel:{mode:'all',lines:new Set(),chars:new Set()},custom:null,contentSrc:'work',template:TEMPLATES[0],p:Object.assign({},DEFAULT_P,TEMPLATES[0].params),page:0,pages:[],printPages:[],printMeta:null,printPage:0,saved:[],exports:[],works:[],collId:'sys-g1',zoom:'fit',printZoom:'fit',tplF:{use:'全部',dir:'全部',age:'全部',style:'全部'},libCat:'all',recent:['tian-trace','poem-card','vertical-classic'],rules:{}};
+try{const s=JSON.parse(localStorage.getItem('kmzf-proto')||'{}');if(Array.isArray(s.saved))app.saved=s.saved;if(Array.isArray(s.exports))app.exports=s.exports;if(Array.isArray(s.works))app.works=s.works;if(s.rules)app.rules=s.rules;}catch(e){}
+function persist(){try{localStorage.setItem('kmzf-proto',JSON.stringify({saved:app.saved,exports:app.exports,works:app.works,rules:app.rules}))}catch(e){}}
+let toastT;function toast(msg){const el=byId('toast');el.textContent=msg;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{el.hidden=true},2800)}
+function setSeg(el,val){$$('button',el).forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===String(val))))}
+function segVal(el){const b=$('button[aria-pressed="true"]',el);return b?b.dataset.v:null}
+
+function currentMeta(){if(app.contentSrc==='custom'&&app.custom)return {title:app.custom.title,author:''};const w=app.work;return {title:w.title,author:(w.dynasty?w.dynasty+' · ':'')+w.author};}
+function currentChars(){if(app.contentSrc==='custom'&&app.custom)return flatten(app.custom,null);return flatten(app.work,app.sel);}
+function selCount(){const cs=flatten(app.work,app.sel);const lines=new Set(cs.map(c=>c.li));return {chars:cs.filter(c=>!c.punct).length,lines:lines.size};}
+function setWork(id){const w=workById(id);if(!w)return;app.work=w;app.contentSrc='work';app.sel={mode:'all',lines:new Set(),chars:new Set()};}
+function needsPinyin(){if(app.contentSrc==='custom')return !!(app.custom&&app.custom.pinyin);const w=app.work;return w.cat==='hanzi'||w.grade==='学前'||w.grade==='一年级';}
+function resolvePinyin(t){return !!t.params.pinyin&&(t.params.mode==='blank'||needsPinyin());}
+function applyTemplate(id){const t=tplById(id);if(!t)return;app.template=t;app.p=Object.assign({},DEFAULT_P,t.params,{pinyin:resolvePinyin(t)});app.page=0;app.recent=[id,...app.recent.filter(x=>x!==id)].slice(0,5);}
+function pDesc(p){return `${p.paper} ${p.orient==='portrait'?'纵向':'横向'} · ${MODE_NAMES[p.mode]}${p.mode==='card'?'':' · '+GRID_NAMES[p.grid]+' '+p.cell+' mm'}${p.pinyin&&p.grid!=='vertical'?(p.pyScope==='multi'?' · 只标多音字':' · 注音'):''}${p.bg&&p.bg!=='none'?' · '+BG_NAMES[p.bg]:''}`}
+
+/* ---------- 导航 ---------- */
+const renderers={};
+function go(screen,opts){
+  opts=opts||{};if(!NOTES[screen])screen='home';
+  app.screen=screen;
+  $$('.screen').forEach(s=>{s.hidden=(s.id!=='s-'+screen)});
+  const navKey=({work:'library',custom:'library',composer:'templates',print:'templates',flow:''})[screen]??screen;
+  $$('.nav button').forEach(b=>{if(b.dataset.go===navKey)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+  if(renderers[screen])renderers[screen](opts);
+  renderDrawer(screen);
+  const st=$('.stage');if(st)st.scrollTop=0;
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-go]');if(!b)return;
+  if(b.dataset.work)setWork(b.dataset.work);
+  if(b.dataset.template)applyTemplate(b.dataset.template);
+  if(b.dataset.cat)app.libCat=b.dataset.cat;
+  if(b.dataset.coll)app.collId=b.dataset.coll;
+  go(b.dataset.go);
+});
+byId('btn-annot').addEventListener('click',()=>{const on=!document.body.classList.contains('annot');document.body.classList.toggle('annot',on);byId('btn-annot').setAttribute('aria-pressed',String(on));byId('btn-annot').classList.toggle('red',on)});
+byId('btn-drawer').addEventListener('click',()=>{const d=byId('drawer');d.hidden=!d.hidden;byId('btn-drawer').setAttribute('aria-pressed',String(!d.hidden))});
+byId('dr-close').addEventListener('click',()=>{byId('drawer').hidden=true;byId('btn-drawer').setAttribute('aria-pressed','false')});
+/* ---------- 对话框 ---------- */
+function openModal(title,html){byId('modal-title').textContent=title;byId('modal-body').innerHTML=html;byId('modal').hidden=false;}
+function closeModal(){byId('modal').hidden=true;}
+byId('modal-close').addEventListener('click',closeModal);
+byId('modal').addEventListener('click',e=>{if(e.target===byId('modal'))closeModal()});
+function loginModal(){openModal('登录开蒙纸坊',`<p>登录后作品、模板、文选云端同步，换设备也能打开。</p><div class="qr" aria-label="登录二维码示意"></div><div style="height:14px"></div><div class="row" style="justify-content:center"><button class="btn" id="m-phone">手机号登录</button><button class="btn primary" id="m-scanned">我已扫码</button></div><p class="muted" style="text-align:center">登录即表示同意用户协议与隐私政策</p>`);
+  byId('m-phone').addEventListener('click',()=>toast('手机号登录即将开放，先用微信扫码'));byId('m-scanned').addEventListener('click',()=>{closeModal();toast('登录服务即将开放，当前以游客身份继续')});}
+byId('btn-login').addEventListener('click',loginModal);
+byId('top-search').addEventListener('submit',e=>{e.preventDefault();byId('lib-q').value=byId('top-q').value.trim();app.libCat='all';go('library');});
+/* ---------- 屏幕校准 ---------- */
+try{const c=parseFloat(localStorage.getItem('kmzf-cal'));if(c>0.5&&c<1.6)app.cal=c;}catch(e){}
+function calStatus(){const el=byId('cal-status');if(!el)return;el.textContent=app.cal?`已校准，比例 ${app.cal.toFixed(3)}，「实际尺寸」即真实大小`:'「实际尺寸」需要先校准屏幕';}
+function applyCal(wrap){const svg=wrap.querySelector('svg');if(!svg)return;if(wrap.classList.contains('actual')){const [W]=pageSize(app.p);svg.style.width=(W*(app.cal||1))+'mm';}else svg.style.width='';}
+byId('btn-cal').addEventListener('click',()=>{openModal('校准屏幕',`<p>把一张银行卡贴在屏幕上，拖动滑块直到红框和卡片一样大，然后保存。之后「实际尺寸」预览就是真实大小。</p><div class="cal-box" id="cal-box">银行卡 85.6 × 54 mm</div><input type="range" id="cal-range" min="0.6" max="1.5" step="0.005" value="${app.cal||1}" aria-label="校准比例"><div class="row between"><span class="muted" id="cal-val"></span><div class="row"><button class="btn" id="cal-reset">重置</button><button class="btn primary" id="cal-save">保存</button></div></div>`);
+  const box=byId('cal-box'),rg=byId('cal-range'),val=byId('cal-val');const upd=()=>{const k=+rg.value;box.style.width=(85.6*k)+'mm';box.style.height=(53.98*k)+'mm';val.textContent=`比例 ${k.toFixed(3)}`};rg.addEventListener('input',upd);upd();
+  byId('cal-reset').addEventListener('click',()=>{rg.value=1;upd()});
+  byId('cal-save').addEventListener('click',()=>{app.cal=+rg.value;try{localStorage.setItem('kmzf-cal',String(app.cal))}catch(e){}calStatus();closeModal();renderPreview();toast('已保存屏幕比例')});});
+
+function renderDrawer(screen){
+  const n=NOTES[screen];if(!n)return;
+  byId('dr-title').textContent=n.title+' · 说明';byId('dr-goal').textContent=n.goal;
+  byId('dr-notes').innerHTML=n.notes.map((t,i)=>`<li data-n="${i+1}"><b>${i+1}</b>${esc(t)}</li>`).join('');
+  byId('dr-inter').innerHTML=n.inter.map(t=>`<li>${esc(t)}</li>`).join('');
+  byId('dr-edge').innerHTML=n.edge.map(t=>`<li>${esc(t)}</li>`).join('');
+  byId('dr-prd').textContent=n.prd;
+  $$('#dr-notes li').forEach(li=>li.addEventListener('click',()=>{
+    if(!document.body.classList.contains('annot'))byId('btn-annot').click();
+    const hs=$$('#s-'+screen+' .hs').find(h=>h.textContent===li.dataset.n);
+    if(hs&&hs.parentElement){hs.parentElement.scrollIntoView({behavior:'smooth',block:'center'});hs.parentElement.classList.remove('pulse');void hs.parentElement.offsetWidth;hs.parentElement.classList.add('pulse');}
+  }));
+}
+
+/* ---------- 模板缩略图 ---------- */
+function tplThumb(t,chars,meta,pinyin){
+  const p=Object.assign({},DEFAULT_P,t.params,{watermark:false,ruler:false,name:'',pinyin:pinyin===undefined?resolvePinyin(t):pinyin});
+  const cs=chars||flatten(workById('jingyesi'),null);
+  const pages=buildPages(p,p.mode==='practice'?cs.slice(0,12):cs,meta||{title:'静夜思',author:'唐 · 李白'});
+  return pages[0];
+}
+function tplSpecs(t){const p=Object.assign({},DEFAULT_P,t.params);const py=t.id?resolvePinyin(t):!!p.pinyin;return `<span class="tag">${p.paper}</span>${p.mode==='card'?`<span class="tag">卡片${p.grid&&p.grid!=='blank'?' · '+GRID_NAMES[p.grid]:''}</span>`:`<span class="tag">${GRID_NAMES[p.grid]} ${p.cell} mm</span>`}<span class="tag">${p.dir==='v'?'竖排':'横排'}</span>${p.grid==='vertical'?'':`<span class="tag ${py?'blue':''}">注音默认${py?'开':'关'}</span>`}`}
+function tplCard(t,big){
+  return `<div class="tcard${big?' big':''}"><button class="thumb" data-go="composer" data-template="${t.id}" aria-label="用「${esc(t.name)}」出纸">${tplThumb(t,currentChars(),currentMeta())}</button><div class="n">${esc(t.name)}</div><div class="d">${esc(t.desc||'我的模板')}</div><div class="specs">${tplSpecs(t)}</div><div class="actions"><button class="btn small primary" data-go="composer" data-template="${t.id}">用这张纸</button>${t.mine?`<button class="btn small" data-del="${t.id}">删除</button>`:''}</div></div>`;
+}
+
+/* ---------- 首页 ---------- */
+renderers.home=function(){
+  const w=workById('jingyesi');
+  byId('home-date').textContent='今日一页 · '+new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric'})+' · 一年级';
+  byId('home-lines').innerHTML=w.lines.map(l=>`<div><span class="py">${esc(l[1])}</span>${esc(l[0])}</div>`).join('');
+  byId('home-preview').innerHTML=tplThumb(TEMPLATES[0],flatten(w,null),{title:w.title,author:'唐 · 李白'},true);
+  byId('home-templates').innerHTML='<b class="hs">4</b>'+app.recent.map(id=>tplById(id)).filter(Boolean).map(t=>tplCard(t)).join('');
+  byId('home-collections').innerHTML='<b class="hs">5</b>'+COLLECTIONS.map(c=>`<button class="btn" data-go="collections" data-coll="${c.id}">${esc(c.name)} <span class="tag">${c.items.length} 篇</span></button>`).join('');
+};
+
+/* ---------- 资料库 ---------- */
+function libFilter(){
+  const q=(byId('lib-q').value||'').trim().toLowerCase();const g=byId('lib-grade').value;const d=byId('lib-dyn').value;
+  return WORKS.filter(w=>(app.libCat==='all'||w.cat===app.libCat)&&(!g||w.grade===g)&&(!d||w.dynasty===d)&&(!q||w.title.includes(q)||w.author.includes(q)||w.lines[0][0].includes(q)||w.tp.startsWith(q)));
+}
+renderers.library=function(){
+  byId('lib-cats').innerHTML='<b class="hs">1</b>'+CATS.map(c=>{const n=c.id==='all'?WORKS.length:WORKS.filter(w=>w.cat===c.id).length;return `<button data-cat="${c.id}" aria-current="${String(app.libCat===c.id)}"><span>${c.n}</span><span class="cnt num">${n}</span></button>`}).join('');
+  $$('#lib-cats button').forEach(b=>b.addEventListener('click',()=>{app.libCat=b.dataset.cat;renderers.library()}));
+  const list=libFilter();
+  byId('lib-list').innerHTML='<b class="hs">3</b>'+(list.length?list.map(w=>`<div class="wcard"><button class="t" style="all:unset;cursor:pointer;font-family:'Noto Serif SC',serif;font-size:17px;font-weight:600" data-go="work" data-work="${w.id}">${esc(w.title)}</button><div class="a">${esc((w.dynasty?w.dynasty+' · ':'')+w.author)} · ${esc(w.grade)}</div><div class="first">${esc(w.lines[0][0])}</div><div class="tags">${w.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div><div class="row"><button class="btn small" data-go="work" data-work="${w.id}">查看</button><button class="btn small primary" data-go="templates" data-work="${w.id}">出纸</button></div></div>`).join(''):`<div class="card" style="grid-column:1/-1"><b>这个分类还没有内容</b><span class="muted">换个关键词，或者用自己的文字出纸。</span><div class="row"><button class="btn" data-go="custom">用自己的文字</button></div></div>`);
+};
+['lib-q','lib-grade','lib-dyn'].forEach(id=>byId(id).addEventListener('input',()=>renderers.library()));
+
+/* ---------- 作品详情 ---------- */
+let workTab='notes';
+renderers.work=function(){
+  const w=app.work;
+  byId('work-crumb').textContent=w.title;byId('work-title').textContent=w.title;
+  byId('work-meta').textContent=`${w.dynasty?w.dynasty+' · ':''}${w.author} · ${w.grade} · ${w.tags.join(' · ')}`;
+  setSeg(byId('work-gran'),app.sel.mode);
+  renderWorkText();renderWorkTab();
+};
+function renderWorkText(){
+  const w=app.work,py=byId('work-py').checked,mode=app.sel.mode;
+  const el=byId('work-text');el.className='work-text hsw'+(mode==='lines'?' sel-lines':mode==='chars'?' sel-chars':'');
+  el.innerHTML='<b class="hs">2</b>'+w.lines.map((ln,li)=>{const chars=[...ln[0]];const syl=ln[1].split(/\s+/);let k=0;
+    return `<div class="line${mode==='lines'&&app.sel.lines.has(li)?' on':''}" data-li="${li}">${chars.map((ch,ci)=>{const punct=PUNCT.test(ch);const s=punct?'':(syl[k++]||'');const on=mode==='chars'&&app.sel.chars.has(li+':'+ci);return `<span class="ch${punct?' punct':''}${on?' on':''}" data-li="${li}" data-ci="${ci}"><span class="py${py&&!punct?'':' hide'}">${esc(s)}</span>${esc(ch)}</span>`}).join('')}</div>`}).join('');
+  $$('.line',el).forEach(l=>l.addEventListener('click',e=>{if(mode!=='lines')return;const li=+l.dataset.li;app.sel.lines.has(li)?app.sel.lines.delete(li):app.sel.lines.add(li);renderWorkText();}));
+  $$('.ch',el).forEach(c=>c.addEventListener('click',e=>{if(mode!=='chars'||c.classList.contains('punct'))return;e.stopPropagation();const k=c.dataset.li+':'+c.dataset.ci;app.sel.chars.has(k)?app.sel.chars.delete(k):app.sel.chars.add(k);renderWorkText();}));
+  const n=selCount();const empty=(mode==='lines'&&app.sel.lines.size===0)||(mode==='chars'&&app.sel.chars.size===0);
+  byId('work-selinfo').textContent=mode==='all'?`整篇 · ${n.lines} 句 · ${n.chars} 字`:empty?(mode==='lines'?'点正文里的整行来选句':'点正文里的单字来选字'):`已选 ${n.lines} 句 · ${n.chars} 字`;
+  byId('work-go').disabled=empty;byId('work-quick').disabled=empty;
+}
+function renderWorkTab(){const w=app.work;byId('work-tabpanel').textContent=workTab==='notes'?w.notes:workTab==='trans'?w.trans:w.edition;$$('#work-tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===workTab)));}
+byId('work-py').addEventListener('change',renderWorkText);
+$$('#work-gran button').forEach(b=>b.addEventListener('click',()=>{app.sel.mode=b.dataset.g;setSeg(byId('work-gran'),b.dataset.g);renderWorkText()}));
+$$('#work-tabs button').forEach(b=>b.addEventListener('click',()=>{workTab=b.dataset.tab;renderWorkTab()}));
+byId('work-go').addEventListener('click',()=>{app.contentSrc='work';go('templates')});
+byId('work-quick').addEventListener('click',()=>{app.contentSrc='work';applyTemplate('tian-trace');go('composer')});
+byId('work-keep').addEventListener('click',()=>{app.contentSrc='work';app.page=0;go('composer');toast(`已用当前纸张设置排「${app.work.title}」`)});
+byId('work-collect').addEventListener('click',()=>{const c=COLLECTIONS.find(c=>c.id==='my-1');if(!c.items.includes(app.work.id))c.items.push(app.work.id);toast(`已加入「${c.name}」`)});
+
+/* ---------- 自定义内容 ---------- */
+let customRows=[],customReady=false;
+function customCount(){const t=byId('custom-text').value;const n=[...t].filter(ch=>!PUNCT.test(ch)&&ch.trim()).length;byId('custom-count').textContent=`${n} 字${n>500?' · 超过 500 字，建议分批':''}`;}
+function customLines(){return byId('custom-text').value.split(/\n/).map(s=>s.trim()).filter(Boolean)}
+function buildCustom(withPy){
+  const lines=customLines();customRows=[];
+  lines.forEach((text,li)=>{[...text].forEach((ch,ci)=>{if(PUNCT.test(ch))return;const opts=PY[ch]||[];const rule=app.rules[ch];customRows.push({ch,li,ci,opts,py:withPy?(rule||opts[0]||''):'',multi:opts.length>1,known:opts.length>0});});});
+  app.custom={title:'自定义内容',author:'',lines:[],pinyin:withPy};syncCustom(lines);
+}
+byId('custom-text').addEventListener('input',()=>{customCount();customReady=false;if(byId('custom-py').checked)byId('custom-go').disabled=true;});customCount();
+byId('custom-py').addEventListener('change',e=>{const on=e.target.checked;byId('custom-check').hidden=!on;byId('custom-run').hidden=!on;byId('custom-go').textContent=on?'用它出纸 →':'直接出纸 →';byId('custom-go').disabled=on&&!customReady;});
+byId('custom-run').addEventListener('click',()=>{buildCustom(true);renderCustomTable();customReady=true;byId('custom-go').disabled=false;});
+function syncCustom(lines){app.custom.lines=lines.map((text,li)=>{const rows=customRows.filter(r=>r.li===li);return [text,rows.map(r=>r.py||'?').join(' ')]});}
+function renderCustomTable(){
+  const multi=customRows.filter(r=>r.multi).length,unknown=customRows.filter(r=>!r.known).length;
+  byId('custom-multi').textContent=`${multi} 个多音字需核对${unknown?' · '+unknown+' 字待标注':''}`;
+  byId('custom-table').innerHTML='<thead><tr><th>字</th><th>拼音</th><th>状态</th></tr></thead><tbody>'+customRows.map((r,i)=>`<tr class="${r.multi?'multi':''}"><td class="ch">${esc(r.ch)}</td><td>${r.multi?`<select data-i="${i}" aria-label="${esc(r.ch)} 的读音">${r.opts.map(o=>`<option ${o===r.py?'selected':''}>${o}</option>`).join('')}</select>`:(r.known?esc(r.py):'<input type="text" data-i="'+i+'" placeholder="手动填写" style="width:90px;min-height:30px" aria-label="手动注音">')}</td><td>${r.multi?'<span class="tag warn">多音字</span>':(r.known?'<span class="tag ok">已收录</span>':'<span class="tag red">待标注</span>')}</td></tr>`).join('')+'</tbody>';
+  $$('#custom-table select,#custom-table input').forEach(el=>el.addEventListener('change',()=>{const r=customRows[+el.dataset.i];r.py=el.value;if(byId('custom-save').checked){app.rules[r.ch]=el.value;persist();}syncCustom(customLines());toast(`「${r.ch}」读音改为 ${el.value}`)}));
+}
+byId('custom-go').addEventListener('click',()=>{if(!byId('custom-py').checked||!customReady)buildCustom(byId('custom-py').checked);app.contentSrc='custom';go('templates')});
+
+/* ---------- 纸坊 ---------- */
+const TPL_F={use:['全部','描红','临摹','抄写','卡片','空白'],dir:['全部','横排','竖排'],age:['全部','低幼','一年级','二年级以上','成人'],style:['全部','简约','古风']};
+renderers.templates=function(){
+  const meta=currentMeta();byId('tpl-forwhat').textContent=`正在为「${meta.title}」选纸`;
+  ['use','dir','age','style'].forEach(k=>{const el=byId('tpl-'+k);el.innerHTML=TPL_F[k].map(v=>`<button aria-pressed="${String(app.tplF[k]===v)}" data-k="${k}" data-v="${v}">${v}</button>`).join('');$$('button',el).forEach(b=>b.addEventListener('click',()=>{app.tplF[b.dataset.k]=b.dataset.v;renderers.templates()}))});
+  const f=app.tplF;const list=TEMPLATES.filter(t=>(f.use==='全部'||t.use===f.use)&&(f.dir==='全部'||t.dir===f.dir)&&(f.age==='全部'||t.age.includes(f.age))&&(f.style==='全部'||t.style===f.style));
+  byId('tpl-count').textContent=`${list.length} 张纸`;
+  byId('tpl-grid').innerHTML='<b class="hs">3</b>'+(list.length?list.map(t=>tplCard(t,true)).join(''):'<div class="muted" style="grid-column:1/-1">没有符合条件的纸。换个筛选，或者自己设计一张。</div>');
+  byId('tpl-mine').innerHTML='<b class="hs">4</b>'+(app.saved.length?app.saved.map(t=>tplCard(t)).join(''):'<div class="muted" style="grid-column:1/-1">还没有保存过模板。</div>');
+  $$('#tpl-mine [data-del]').forEach(b=>b.addEventListener('click',()=>{app.saved=app.saved.filter(t=>t.id!==b.dataset.del);persist();renderers.templates();toast('已删除模板')}));
+};
+byId('tpl-reset').addEventListener('click',()=>{app.tplF={use:'全部',dir:'全部',age:'全部',style:'全部'};renderers.templates()});
+byId('tpl-blank').addEventListener('click',()=>{applyTemplate('blank-tian');go('composer');toast('从空白纸开始：右侧调纸张与网格，左侧选练习模式')});
+
+/* ---------- 出纸工作台 ---------- */
+function syncControls(){
+  const p=app.p;
+  byId('p-paper').value=p.paper;setSeg(byId('p-orient'),p.orient);byId('p-margin').value=p.margin;byId('p-margin-n').value=p.margin;
+  byId('p-grid').value=p.grid;byId('p-cell').value=p.cell;byId('p-cell-n').value=p.cell;byId('p-gap').value=p.gap;byId('p-gap-n').value=p.gap;
+  setSeg(byId('p-linecolor'),p.linecolor);byId('p-pinyin').checked=!!p.pinyin;setSeg(byId('p-dir'),p.dir);setSeg(byId('p-pyscope'),p.pyScope||'all');pinyinHint();
+  $$('#p-tracestyle .chip').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.v===p.trace)));
+  byId('p-font').value=p.font;setSeg(byId('cmp-mode'),p.mode);if(p.punct==='cell')p.punct='tail';setSeg(byId('cmp-punct'),p.punct);setSeg(byId('cmp-seg'),p.seg||'phrase');byId('cmp-seg-wrap').hidden=p.mode!=='flow';byId('cmp-punct-wrap').hidden=!(p.mode==='flow'||p.mode==='card');byId('cmp-pgap-wrap').hidden=(p.seg||'phrase')==='none';byId('p-pgap').value=p.phraseGap??6;byId('p-pgap-n').value=p.phraseGap??6;
+  byId('p-example').value=p.example;byId('p-trace').value=p.traceN;byId('p-title').checked=!!p.title;byId('p-sign').checked=!!p.sign;byId('p-ruler').checked=!!p.ruler;byId('p-titleauto').checked=!(p.titleSize>0);byId('p-cardauto').checked=p.cardAuto!==false;byId('p-name').value=p.name||'';
+  byId('cmp-practice-opts').hidden=p.mode!=='practice';
+  byId('p-margin-hint').hidden=p.margin>=5;
+  byId('p-bg').value=p.bg||'none';setSeg(byId('p-bgplace'),p.bgPlace||'bands');byId('p-bgop').value=p.bgOpacity??0.16;byId('p-bgop-v').textContent=Math.round((p.bgOpacity??0.16)*100)+'%';byId('p-bg-opts').hidden=(p.bg||'none')==='none';bgSrc();
+  setSeg(byId('cmp-zoom'),app.zoom);
+}
+function cellMax(){const p=app.p;const [W,H]=pageSize(p);const m=p.margin;const classic=p.grid==='vertical';
+  const top=m+((p.title&&!classic)?titleSizeFor(p,p.cell)*1.85:(classic?2:0));const bottom=H-Math.max(m,p.ruler?8:4)-(p.sign?8:0);
+  const aw=W-2*m,ah=bottom-top;const py=(p.pinyin&&!classic)?1.42:1;
+  const mx=(p.dir==='v'||classic)?Math.min(aw/(classic?1.12:py),ah):Math.min(aw,ah/py);
+  return Math.max(20,Math.floor(mx*10)/10);}
+function updateCellMax(){const mx=cellMax();if(app.p.cell>mx)app.p.cell=mx;['p-cell','p-cell-n'].forEach(id=>{byId(id).max=mx;byId(id).value=app.p.cell});['p-gap','p-gap-n'].forEach(id=>byId(id).value=app.p.gap);return mx;}
+function renderPreview(){
+  const cmax=updateCellMax();
+  const meta=currentMeta();const chars=currentChars();
+  app.pages=buildPages(app.p,chars,meta);
+  if(app.page>=app.pages.length)app.page=app.pages.length-1;if(app.page<0)app.page=0;
+  const wrap=byId('cmp-paper');wrap.innerHTML=app.pages[app.page];wrap.classList.toggle('actual',app.zoom==='actual');applyCal(wrap);calStatus();
+  byId('cmp-pageinfo').textContent=`第 ${app.page+1} 页 / 共 ${app.pages.length} 页`;
+  byId('p-margin-hint').hidden=app.p.margin>=5;
+  byId('cmp-prev').disabled=app.page===0;byId('cmp-next').disabled=app.page>=app.pages.length-1;
+  const [W,H]=pageSize(app.p);
+  byId('cmp-size').textContent=`${W} × ${H} mm${app.p.mode==='card'?'':' · '+LAST.cols+' 列 × '+LAST.rows+' 行'}`;
+  byId('p-cardauto-wrap').hidden=app.p.mode!=='card';
+  const cardAuto=app.p.mode==='card'&&app.p.cardAuto!==false;byId('p-cell').disabled=byId('p-cell-n').disabled=cardAuto;
+  if(cardAuto&&LAST.cardSize){byId('p-cell').value=LAST.cardSize;byId('p-cell-n').value=LAST.cardSize;}
+  const tsz=LAST.titleSize||titleSizeFor(app.p,app.p.cell);byId('p-title-hint').textContent=(app.p.titleSize>0?'手动 ':'自动 ')+tsz.toFixed(1)+' mm · 作者字号为标题的 0.4 倍';
+  if(!(app.p.titleSize>0)){byId('p-titlesize').value=Math.round(tsz*2)/2;byId('p-titlesize-n').value=tsz.toFixed(1);}
+  byId('cmp-seg-hint').textContent=({phrase:'短语整体不拆行，短语之间只留可调的空白，不占格子。三字经、千字文这类等长短语会自动对齐成列。',sentence:'每个句子（句号、问号、叹号或原文换行）另起一行，句内短语之间留可调空白。',none:'一字一格连续排，没有短语间距。'})[app.p.seg||'phrase'];
+  byId('cmp-pgap-wrap').hidden=(app.p.seg||'phrase')==='none';
+  if(byId('p-pgap').value!==String(app.p.phraseGap??6)){byId('p-pgap').value=app.p.phraseGap??6;byId('p-pgap-n').value=app.p.phraseGap??6;}
+  byId('p-cell-hint').textContent=app.p.mode==='card'?(cardAuto?`自动适配一页：格子 ${LAST.cardSize} mm，每行最多 ${LAST.cols} 字`:`格子 ${app.p.cell} mm · 每行最多 ${LAST.cols} 字 · 共 ${app.pages.length} 页`):`本页最大 ${cmax} mm（一页一格）· 当前 ${LAST.cols} 列 × ${LAST.rows} 行${app.p.gap===0?' · 无间隔，相邻格子共用边线':''}`;
+  byId('cmp-content-title').textContent=meta.title+(meta.author?' · '+meta.author:'');
+  const src=app.contentSrc==='custom'&&app.custom?app.custom:app.work;
+  byId('cmp-content').textContent=(app.contentSrc==='custom'||app.sel.mode==='all')?src.lines.map(l=>l[0]).join(' '):chars.map(c=>c.ch).join(app.sel.mode==='chars'?' ':'');
+  byId('cmp-count').textContent=`${chars.filter(c=>!c.punct).length} 字 · ${MODE_NAMES[app.p.mode]} · ${FONT_NAMES[app.p.font]}`;
+}
+renderers.composer=function(){syncControls();renderPreview()};
+const r1=v=>Math.round(v*10)/10;
+function bindP(id,key,ev,fn){byId(id).addEventListener(ev||'input',e=>{app.p[key]=fn?fn(e.target):e.target.value;if(id==='p-margin'||id==='p-margin-n'){byId('p-margin').value=app.p.margin;byId('p-margin-n').value=app.p.margin;byId('p-margin-hint').hidden=app.p.margin>=5;}renderPreview()})}
+bindP('p-paper','paper','change');bindP('p-margin','margin','input',t=>r1(+t.value));bindP('p-margin-n','margin','change',t=>Math.max(0,Math.min(30,r1(+t.value||0))));bindP('p-grid','grid','change');bindP('p-cell','cell','input',t=>r1(+t.value));bindP('p-gap','gap','input',t=>r1(+t.value));
+bindP('p-cell-n','cell','change',t=>Math.max(8,Math.min(cellMax(),r1(+t.value||16))));bindP('p-gap-n','gap','change',t=>Math.max(0,Math.min(20,r1(+t.value||0))));
+function pinyinHint(){const custom=app.contentSrc==='custom'&&app.custom;byId('p-pyscope-wrap').hidden=!app.p.pinyin||app.p.mode==='blank';byId('p-pinyin-hint').textContent=custom?(app.custom.pinyin?'自定义内容已注音，多音字以核对页为准':'自定义内容未注音。打开后按默认读音补注，多音字请回「用自己的文字」核对'):(needsPinyin()?'默认开：识字表、学前与一年级内容':'默认关：二年级以上、临摹、竖排、卡片');}
+byId('p-pinyin').addEventListener('change',e=>{app.p.pinyin=e.target.checked;if(app.p.pinyin&&app.contentSrc==='custom'&&app.custom&&!app.custom.pinyin){buildCustom(true);toast('已按默认读音补注，多音字请回「用自己的文字」核对');}pinyinHint();renderPreview()});
+bindSeg('p-pyscope','pyScope');bindP('p-font','font','change');bindP('p-example','example','input',t=>Math.max(0,Math.min(3,+t.value||0)));bindP('p-trace','traceN','input',t=>Math.max(0,Math.min(6,+t.value||0)));
+bindP('p-title','title','change',t=>t.checked);bindP('p-sign','sign','change',t=>t.checked);bindP('p-ruler','ruler','change',t=>t.checked);bindP('p-name','name','input');
+function bindSeg(id,key,after){const el=byId(id);$$('button',el).forEach(b=>b.addEventListener('click',()=>{app.p[key]=b.dataset.v;setSeg(el,b.dataset.v);if(after)after();renderPreview()}))}
+function bgSrc(){const im=BG_IMG[app.p.bg];byId('p-bg-src').textContent=im?`${BG_NAMES[app.p.bg]} · ${im.by} · 来源 Wikimedia Commons，公有领域`:'';}
+bindP('p-bg','bg','change');byId('p-bg').addEventListener('change',()=>{byId('p-bg-opts').hidden=app.p.bg==='none';if(BG_IMG[app.p.bg]&&app.p.bgOpacity<0.25){app.p.bgOpacity=app.p.bgPlace==='full'?0.4:0.35;byId('p-bgop').value=app.p.bgOpacity;byId('p-bgop-v').textContent=Math.round(app.p.bgOpacity*100)+'%';renderPreview();}bgSrc()});bindSeg('p-bgplace','bgPlace');bindP('p-bgop','bgOpacity','input',t=>+t.value);byId('p-bgop').addEventListener('input',()=>{byId('p-bgop-v').textContent=Math.round(app.p.bgOpacity*100)+'%'});
+bindSeg('p-orient','orient');bindSeg('p-linecolor','linecolor');bindSeg('p-dir','dir');bindSeg('cmp-punct','punct');
+bindSeg('cmp-mode','mode',()=>{byId('cmp-practice-opts').hidden=app.p.mode!=='practice';byId('cmp-seg-wrap').hidden=app.p.mode!=='flow';byId('cmp-punct-wrap').hidden=!(app.p.mode==='flow'||app.p.mode==='card')});
+bindSeg('cmp-seg','seg',()=>{byId('cmp-pgap-wrap').hidden=app.p.seg==='none'});
+bindP('p-pgap','phraseGap','input',t=>r1(+t.value));
+bindP('p-titlesize','titleSize','input',t=>{byId('p-titleauto').checked=false;return r1(+t.value)});bindP('p-titlesize-n','titleSize','change',t=>{byId('p-titleauto').checked=false;return Math.max(4,Math.min(30,r1(+t.value||6.5)))});
+byId('p-titleauto').addEventListener('change',e=>{app.p.titleSize=e.target.checked?0:r1(+byId('p-titlesize').value);renderPreview()});
+byId('p-cardauto').addEventListener('change',e=>{app.p.cardAuto=e.target.checked;if(!app.p.cardAuto&&LAST.cardSize)app.p.cell=LAST.cardSize;renderPreview()});bindP('p-pgap-n','phraseGap','change',t=>Math.max(0,Math.min(40,r1(+t.value||0))));
+$$('#p-tracestyle .chip').forEach(c=>c.addEventListener('click',()=>{app.p.trace=c.dataset.v;$$('#p-tracestyle .chip').forEach(x=>x.setAttribute('aria-pressed',String(x===c)));renderPreview()}));
+$$('#cmp-zoom button').forEach(b=>b.addEventListener('click',()=>{app.zoom=b.dataset.v;setSeg(byId('cmp-zoom'),app.zoom);renderPreview()}));
+byId('cmp-prev').addEventListener('click',()=>{app.page--;renderPreview()});byId('cmp-next').addEventListener('click',()=>{app.page++;renderPreview()});
+byId('cmp-save').addEventListener('click',()=>{const r=byId('cmp-save-row');r.hidden=!r.hidden;if(!r.hidden)byId('cmp-save-name').focus()});
+byId('cmp-save-ok').addEventListener('click',()=>{const name=byId('cmp-save-name').value.trim()||('我的模板 '+(app.saved.length+1));app.saved.push({id:'my-'+Date.now(),name,params:Object.assign({},app.p,{name:''}),mine:true});persist();byId('cmp-save-row').hidden=true;byId('cmp-save-name').value='';toast(`已保存模板「${name}」，在纸坊和我的里可以找到`)});
+function contentPicker(){
+  openModal('换内容',`<input type="search" id="cp-q" placeholder="搜标题、作者、首句、拼音首字母" aria-label="搜索"><div class="list" id="cp-list" style="max-height:38vh;overflow:auto"></div><div class="field"><label for="cp-text">或者直接输入一段文字</label><textarea id="cp-text" style="min-height:76px" placeholder="粘贴文字，按标点和换行自动断句"></textarea></div><div class="row between"><span class="muted">纸张与参数保持不变</span><button class="btn primary" id="cp-use">用这段文字</button></div>`);
+  const render=()=>{const q=byId('cp-q').value.trim().toLowerCase();const list=WORKS.filter(w=>!q||w.title.includes(q)||w.author.includes(q)||w.lines[0][0].includes(q)||w.tp.startsWith(q));
+    byId('cp-list').innerHTML=list.map(w=>`<button class="item" data-w="${w.id}" style="cursor:pointer;text-align:left;width:100%"><span class="t">${esc(w.title)}</span><span class="meta">${esc((w.dynasty?w.dynasty+' · ':'')+w.author)} · ${esc(w.grade)} · ${flatten(w,null).filter(c=>!c.punct).length} 字</span></button>`).join('')||'<div class="muted">没有匹配的篇目</div>';
+    $$('#cp-list [data-w]').forEach(b=>b.addEventListener('click',()=>{setWork(b.dataset.w);app.contentSrc='work';app.page=0;closeModal();renderPreview();toast(`已换成「${app.work.title}」，纸张设置不变`)}));};
+  byId('cp-q').addEventListener('input',render);render();
+  byId('cp-use').addEventListener('click',()=>{const txt=byId('cp-text').value.trim();if(!txt){toast('先输入一段文字');return;}byId('custom-text').value=txt;customCount();buildCustom(!!app.p.pinyin);app.contentSrc='custom';app.page=0;closeModal();renderPreview();toast(app.p.pinyin?'已按默认读音注音，多音字可到「用自己的文字」核对':'已换成这段文字，纸张设置不变')});
+}
+byId('cmp-change').addEventListener('click',contentPicker);
+byId('cmp-savework').addEventListener('click',()=>{const r=byId('cmp-work-row');r.hidden=!r.hidden;if(!r.hidden){if(!byId('cmp-work-name').value)byId('cmp-work-name').value=`${currentMeta().title}·${app.template.name||MODE_NAMES[app.p.mode]}`;byId('cmp-work-name').focus()}});
+byId('cmp-work-ok').addEventListener('click',()=>{const name=byId('cmp-work-name').value.trim()||currentMeta().title;const content=(app.contentSrc==='custom'&&app.custom)?{custom:app.custom}:{workId:app.work.id,sel:{mode:app.sel.mode,lines:[...app.sel.lines],chars:[...app.sel.chars]}};app.works.unshift({id:'w-'+Date.now(),name,tpl:app.template.name||'自定义纸张',params:Object.assign({},app.p),content,pages:app.pages.length,at:new Date().toLocaleDateString('zh-CN')});persist();byId('cmp-work-row').hidden=true;byId('cmp-work-name').value='';toast(`作品「${name}」已保存，在个人中心可以再打开`)});
+function openWork(w){if(w.content.custom){app.custom=w.content.custom;app.contentSrc='custom';}else{setWork(w.content.workId);app.sel={mode:w.content.sel.mode,lines:new Set(w.content.sel.lines),chars:new Set(w.content.sel.chars)};app.contentSrc='work';}app.p=Object.assign({},DEFAULT_P,w.params);app.template={id:'work',name:w.tpl,params:w.params};app.page=0;}
+function workChars(w){if(w.content.custom)return flatten(w.content.custom,null);return flatten(workById(w.content.workId),{mode:w.content.sel.mode,lines:new Set(w.content.sel.lines),chars:new Set(w.content.sel.chars)})}
+function workMeta(w){if(w.content.custom)return {title:w.content.custom.title,author:''};const wk=workById(w.content.workId);return {title:wk.title,author:(wk.dynasty?wk.dynasty+' · ':'')+wk.author}}
+byId('cmp-print').addEventListener('click',()=>{const meta=currentMeta();app.printPages=app.pages.slice();app.printMeta={title:meta.title,kind:'单篇'};app.printPage=0;go('print')});
+
+/* ---------- 打印预览 ---------- */
+renderers.print=function(){
+  if(!app.printPages.length){const meta=currentMeta();app.printPages=buildPages(app.p,currentChars(),meta);app.printMeta={title:meta.title,kind:'单篇'};app.printPage=0;}
+  byId('print-title').textContent='打印预览 · '+app.printMeta.title;
+  byId('print-sub').textContent=`${app.printMeta.kind} · 共 ${app.printPages.length} 页 · ${pDesc(app.p)}`;
+  byId('print-papername').textContent=app.p.paper;byId('print-margin-tip').hidden=app.p.margin>=5;
+  byId('print-thumbs').innerHTML='<b class="hs">1</b>'+app.printPages.map((s,i)=>`<button aria-current="${String(i===app.printPage)}" data-i="${i}">${s}<span class="lbl">${i+1}</span></button>`).join('');
+  $$('#print-thumbs button').forEach(b=>b.addEventListener('click',()=>{app.printPage=+b.dataset.i;renderers.print()}));
+  const wrap=byId('print-paper');wrap.innerHTML='<b class="hs">2</b>'+app.printPages[app.printPage];wrap.classList.toggle('actual',app.printZoom==='actual');applyCal(wrap);
+  setSeg(byId('print-zoom'),app.printZoom);
+};
+$$('#print-zoom button').forEach(b=>b.addEventListener('click',()=>{app.printZoom=b.dataset.v;renderers.print()}));
+byId('print-export').addEventListener('click',()=>{
+  const fmt=segVal(byId('print-format'));const n=app.printPages.length;
+  const name=`${app.printMeta.title}-${new Date().toISOString().slice(0,10)}.${fmt}`;
+  const steps=['整理页面','排版为矢量图形','嵌入用到的字体子集','生成 '+fmt.toUpperCase()+' 文件'];
+  openModal('导出 '+fmt.toUpperCase(),`<div class="steps" id="ex-steps">${steps.map((t,i)=>`<div data-i="${i}"><i></i><span>${t}</span></div>`).join('')}</div><div id="ex-done" hidden><p><b>${esc(name)}</b></p><p class="muted">${n} 页 · 约 ${Math.max(60,Math.round(n*38+120))} KB · 游客导出带水印</p>${n>10?'<p class="muted">游客最多导出 10 页，登录后 20 页，会员不限。本次按游客规则导出前 10 页。</p>':''}<div class="row"><button class="btn primary" id="ex-open">查看导出记录</button><button class="btn" id="ex-close">完成</button></div></div>`);
+  const rows=$$('#ex-steps div');let i=0;const tick=()=>{if(i>0)rows[i-1].className='done';if(i<rows.length){rows[i].className='doing';rows[i].querySelector('i').textContent='';i++;setTimeout(tick,420);}else{rows.forEach(r=>{r.className='done';r.querySelector('i').textContent='✓'});byId('ex-done').hidden=false;
+    app.exports.unshift({name,pages:Math.min(n,10),fmt:fmt.toUpperCase(),at:new Date().toLocaleString('zh-CN',{hour12:false}),duplex:byId('print-duplex').checked,nup:byId('print-nup').checked});persist();
+    byId('ex-open').addEventListener('click',()=>{closeModal();meTab='exports';go('me')});byId('ex-close').addEventListener('click',closeModal);}};tick();
+});
+byId('print-now').addEventListener('click',()=>{const n=app.printPages.length;openModal('打印',`<div class="pd"><label for="pd-printer">打印机</label><select id="pd-printer"><option>家里的打印机</option><option>教室 · 一体机</option><option>另存为 PDF</option></select><label for="pd-copies">份数</label><input type="number" id="pd-copies" min="1" max="99" value="1"><label>纸张</label><div>${app.p.paper} · ${app.p.orient==='portrait'?'纵向':'横向'}</div><label>页面范围</label><div>全部 ${n} 页</div><label>缩放</label><div>100%（已锁定，保证格子尺寸准确）</div><label for="pd-duplex">双面</label><div><input type="checkbox" id="pd-duplex" ${byId('print-duplex').checked?'checked':''}> 长边翻转</div></div><div class="row" style="justify-content:flex-end"><button class="btn" id="pd-cancel">取消</button><button class="btn primary" id="pd-ok">打印</button></div>`);
+  byId('pd-cancel').addEventListener('click',closeModal);byId('pd-ok').addEventListener('click',()=>{const c=+byId('pd-copies').value||1;closeModal();toast(`已发送 ${n} 页 × ${c} 份到「${byId('pd-printer').value}」`)});});
+byId('print-test').addEventListener('click',()=>{app.printPages=[testPage(app.p)];app.printMeta={title:'打印测试页',kind:'测试页'};app.printPage=0;renderers.print();toast('已生成测试页，打印后量一下 10 厘米标尺。')});
+
+/* ---------- 文选 ---------- */
+function bookletPlan(){
+  const c=COLLECTIONS.find(x=>x.id===app.collId);const works=c.items.map(workById).filter(Boolean);
+  const p=Object.assign({},app.p,{mode:app.p.mode==='blank'?'practice':app.p.mode});
+  let body=0;const per=works.map(w=>{const n=buildPages(p,flatten(w,null),{title:w.title,author:w.author}).length;body+=n;return n});
+  const cover=byId('bk-cover').checked?1:0,toc=byId('bk-toc').checked?1:0,trans=byId('bk-trans').checked?works.filter(w=>w.trans).length:0;
+  return {c,works,p,per,cover,toc,trans,body,total:cover+toc+body+trans};
+}
+renderers.collections=function(){
+  byId('col-list').innerHTML='<b class="hs">1</b>'+COLLECTIONS.map(c=>`<button aria-current="${String(c.id===app.collId)}" data-c="${c.id}"><b>${esc(c.name)}</b><span class="muted">${c.kind} · ${c.items.length} 篇</span></button>`).join('');
+  $$('#col-list button').forEach(b=>b.addEventListener('click',()=>{app.collId=b.dataset.c;renderers.collections()}));
+  const c=COLLECTIONS.find(x=>x.id===app.collId);const mine=c.kind==='我的文选';
+  byId('col-title').textContent=c.name;byId('col-kind').textContent=c.kind;
+  byId('col-items').innerHTML=c.items.map((id,i)=>{const w=workById(id);if(!w)return '';return `<div class="item"><span class="muted num">${i+1}</span><span class="t">${esc(w.title)}</span><span class="muted">${esc(w.author)} · ${flatten(w,null).filter(x=>!x.punct).length} 字</span>${mine?`<button class="btn" data-mv="-1" data-i="${i}" ${i===0?'disabled':''}>上移</button><button class="btn" data-mv="1" data-i="${i}" ${i===c.items.length-1?'disabled':''}>下移</button><button class="btn" data-rm="${i}">移除</button>`:''}<button class="btn" data-go="work" data-work="${w.id}">查看</button></div>`}).join('')+(mine?'':`<div class="row"><button class="btn small" id="col-copy">复制为我的文选</button><span class="muted">官方文选不可修改</span></div>`);
+  $$('#col-items [data-mv]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.i,j=i+(+b.dataset.mv);[c.items[i],c.items[j]]=[c.items[j],c.items[i]];renderers.collections()}));
+  $$('#col-items [data-rm]').forEach(b=>b.addEventListener('click',()=>{c.items.splice(+b.dataset.rm,1);renderers.collections()}));
+  const cp=byId('col-copy');if(cp)cp.addEventListener('click',()=>{const n={id:'my-'+Date.now(),name:c.name+'（副本）',kind:'我的文选',items:c.items.slice()};COLLECTIONS.push(n);app.collId=n.id;renderers.collections();toast('已复制到我的文选')});
+  byId('bk-params').textContent=pDesc(app.p);
+  const plan=bookletPlan();
+  byId('bk-summary').innerHTML=`<div><b class="num">${plan.cover}</b><span>封面</span></div><div><b class="num">${plan.toc}</b><span>目录</span></div><div><b class="num">${plan.body}</b><span>正文页</span></div><div><b class="num">${plan.trans}</b><span>译文页</span></div><div><b class="num">${plan.total}</b><span>合计</span></div>`;
+};
+['bk-cover','bk-toc','bk-trans','bk-pagenum'].forEach(id=>byId(id).addEventListener('change',()=>renderers.collections()));
+byId('bk-go').addEventListener('click',()=>{
+  const plan=bookletPlan();const pages=[];const entries=[];let pageNo=plan.cover+plan.toc;
+  const p=Object.assign({},plan.p,{ruler:false});
+  const bodies=plan.works.map((w,i)=>{entries.push({title:w.title,author:w.author,page:pageNo+1});const ps=buildPages(p,flatten(w,null),{title:w.title,author:(w.dynasty?w.dynasty+' · ':'')+w.author},byId('bk-pagenum').checked?{offset:pageNo,total:plan.total}:{});pageNo+=ps.length;return ps});
+  if(plan.cover)pages.push(coverPage(p,plan.c,plan.total));
+  if(plan.toc)pages.push(tocPage(p,entries));
+  bodies.forEach(b=>pages.push(...b));
+  if(plan.trans)plan.works.filter(w=>w.trans).forEach(w=>{pageNo++;pages.push(transPage(p,w,pageNo,plan.total))});
+  app.printPages=pages;app.printMeta={title:plan.c.name,kind:'文选成册'};app.printPage=0;go('print');
+});
+
+/* ---------- 个人中心 ---------- */
+let meTab='works';
+renderers.me=function(){
+  $$('#me-tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===meTab)));
+  ['works','templates','books','exports','plan'].forEach(k=>{byId('me-'+k).hidden=(k!==meTab)});
+  byId('me-works').innerHTML='<b class="hs">1</b>'+(app.works.length?app.works.map(w=>{let thumb='';try{thumb=buildPages(Object.assign({},DEFAULT_P,w.params,{watermark:false,ruler:false}),workChars(w),workMeta(w))[0]}catch(e){}return `<div class="tcard big"><button class="thumb" data-open="${w.id}" aria-label="打开作品 ${esc(w.name)}">${thumb}</button><div class="n">${esc(w.name)}</div><div class="d">${esc(workMeta(w).title)} · ${esc(w.tpl)} · ${w.pages} 页 · ${esc(w.at)}</div><div class="specs">${tplSpecs({params:w.params})}</div><div class="actions"><button class="btn small primary" data-open="${w.id}">打开</button><button class="btn small" data-printw="${w.id}">打印</button><button class="btn small" data-delw="${w.id}">删除</button></div></div>`}).join(''):'<div class="card" style="grid-column:1/-1"><b>还没有作品</b><span class="muted">在出纸工作台点「保存作品」，纸张、参数和内容会一起存下来。</span><div class="row"><button class="btn" data-go="library">去选内容</button></div></div>');
+  $$('#me-works [data-open]').forEach(b=>b.addEventListener('click',()=>{openWork(app.works.find(x=>x.id===b.dataset.open));go('composer')}));
+  $$('#me-works [data-printw]').forEach(b=>b.addEventListener('click',()=>{openWork(app.works.find(x=>x.id===b.dataset.printw));app.printPages=[];go('print')}));
+  $$('#me-works [data-delw]').forEach(b=>b.addEventListener('click',()=>{app.works=app.works.filter(x=>x.id!==b.dataset.delw);persist();renderers.me();toast('已删除作品')}));
+  byId('me-templates').innerHTML='<b class="hs">2</b>'+(app.saved.length?app.saved.map(t=>`<div class="item"><span class="t">${esc(t.name)}</span><span class="meta">${esc(pDesc(Object.assign({},DEFAULT_P,t.params)))}</span><button class="btn" data-go="composer" data-template="${t.id}">使用</button></div>`).join(''):'<div class="muted">还没有保存过模板。去出纸工作台点「存为模板」。</div>');
+  byId('me-books').innerHTML=COLLECTIONS.filter(c=>c.kind==='我的文选').map(c=>`<div class="item"><span class="t">${esc(c.name)}</span><span class="meta">${c.items.length} 篇</span><button class="btn" data-go="collections" data-coll="${c.id}">打开</button></div>`).join('')||'<div class="muted">还没有自己的文选。</div>';
+  byId('me-exports').innerHTML='<b class="hs">3</b>'+(app.exports.length?app.exports.map(e=>`<div class="item"><span class="t" style="font-family:'Noto Sans SC',sans-serif;font-size:13px">${esc(e.name)}</span><span class="meta num">${e.fmt} · ${e.pages} 页${e.duplex?' · 双面':''}${e.nup?' · 两页合一':''} · ${esc(e.at)}</span></div>`).join(''):'<div class="muted">还没有导出记录。</div>');
+};
+$$('#me-tabs button').forEach(b=>b.addEventListener('click',()=>{meTab=b.dataset.tab;renderers.me()}));
+byId('me-login').addEventListener('click',loginModal);
+renderers.flow=function(){};
+
+/* ---------- 启动 ---------- */
+(function init(){
+  byId('drawer').hidden=true;byId('btn-drawer').setAttribute('aria-pressed','false');
+  const h=(location.hash||'').replace('#','');
+  go(NOTES[h]?h:'home');
+})();
+</script>
+
+</body>
+</html>
